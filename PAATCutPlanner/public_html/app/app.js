@@ -1,20 +1,20 @@
-var paatPlannerApp = angular.module('paatPlannerApp', ['ngRoute', 'ngAnimate']);
+var paatApp = angular.module('paatApp', ['ngRoute', 'ngAnimate']);
 
-paatPlannerApp.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider){
+paatApp.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider){
     
     //$locationProvider.html5Mode(true);
         
     $routeProvider
         .when('/home', {
             templateUrl: 'views/home.html',
-            controller: 'paatSchedulerController'
+            controller: 'paatController'
         })
         .otherwise({
             redirectTo: '/home'
         });
 }]);
 
-paatPlannerApp.controller('paatSchedulerController', ['$scope', '$http', '$window', function($scope, $http, $window){
+paatApp.controller('paatController', ['$scope', '$http', '$window', function($scope, $http, $window){
     
     $scope.maxDayHeight = 500;          /* Total height in pixels for schedule */
     $scope.maxDailyWorkUnits = 1270;    /* Total number of Work Units for a given day */

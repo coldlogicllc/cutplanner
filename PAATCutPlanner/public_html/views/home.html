@@ -10,10 +10,9 @@
             <div class="day-plan" style="height: {{maxDayHeight}}px;" ng-repeat="day in currentplan.when_planned | orderBy: order | filter: search">
                 <h4>{{day.when_to_do.when_planned_done}}</h4>
                 <div class="group-day-plan" title="{{group.types}}" ng-click="selectGroup(group)" ng-repeat="group in day.groups | orderBy: 'groupnbr'" style="height: {{(100 * (group.work_units / (maxDailyWorkUnits + 150))) | number: 0}}%;">
-                    <!--<div><small>Orders: {{group.orders}}</small></div>
+                    <div><small>Orders: {{group.orders}}</small></div>
                     <div><small>Fabrics: {{group.fabrics}}</small></div>
-                    <div><small>Hours represented: {{group.hours_rep}}</small></div>-->
-                    <div ng-bind-html="drawManus(group)"></div>
+                    <div><small>Hours represented: {{group.hours_rep}}</small></div>
                 </div>
             </div>
         </div>
