@@ -41,7 +41,7 @@ cutPlannerApp.controller('cutPlannerController', ['$scope', '$http', '$window', 
         // TODO: need to build manu's to display different color vertical bars.
     };
     
-    $http.get(RBT.cutPlannerBase + 'data/test.json').then(function(response){
+    $http.get(RBT.jsonServerUrl).then(function(response){
         $scope.order = 'when_to_do.when_planned_done';
         $scope.dataPlans = response.data;
     });
