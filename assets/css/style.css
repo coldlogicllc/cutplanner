@@ -1,0 +1,113 @@
+/* Application */
+.content {
+    margin: 15px;
+}
+
+/* Detail */
+
+.detail-box {
+    background: #fbfbfb;
+    border: 2px solid #efefef;
+    border-radius: 10px;
+    min-height: 120px;
+    margin: 3px 15px;
+    color: #444;
+}
+
+.detail-title {
+    font-size: 18px;      
+    padding: 0 0 0 10px;
+}
+
+.detail-content {
+    padding: 15px;
+}
+
+.legend-item-default {
+    width: 30px;
+    height: 30px;
+    background: #efefef;
+    border: 1px solid #dfdfdf;
+    display: inline-block;
+}
+
+.legend-item-late {
+    background: #f2dede;
+}
+
+.legend-item-label {
+    margin: 0 7px 16px 0;
+    vertical-align: middle;
+}
+
+.error-message {
+    color: red; 
+    display: block; 
+    text-align: left;
+}
+
+.form-group label {
+    margin-bottom: 0px !important;
+}
+
+/* Grids */
+
+.plan-container {
+    display: flex;    
+    overflow-x: scroll;
+    border: 2px solid #ddd;
+}
+
+.plan-info {
+    clear: both;
+    margin: 0 0 3px 0;
+}
+
+.day-plan {
+    float: left;
+    padding: 7px 9px;
+    border-right: 2px dashed #ddd;
+    min-width: 180px;
+}
+
+.day-plan h4 {
+    color: #444;
+    border-bottom: 2px solid #444;
+    text-align: center;
+}
+
+.group-day-plan {
+    border: 1px solid #dfdfdf;
+    background: #efefef;
+    margin: 5px 0 0 0;
+    font-size: 13px;
+    overflow: hidden;
+    padding: 3px;
+    cursor: pointer;
+}
+
+/* Animation */
+
+.ng-enter {
+  transition:0.5s linear all;
+  opacity:0;
+}
+
+.ng-enter.ng-enter-active {
+  opacity:1;
+}
+
+#plan-schedule .ng-enter {
+  transition:0.5s linear all;
+  opacity:0;
+}
+
+#plan-schedule .ng-enter.ng-enter-active {
+  opacity:1;
+}
+
+/* Buttons */
+
+.btn {
+    cursor: pointer;
+}

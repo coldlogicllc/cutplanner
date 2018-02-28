@@ -1,0 +1,74 @@
+<section>
+    <!-- Day Grid -->
+    <div class="content" ng-repeat="currentplan in dataPlans">
+        <div class="plan-info">
+            <button class="btn btn-light" ng-click="order = 'when_to_do.when_planned_done'">Order by Date (A-Z)</button>
+            <button class="btn btn-light" ng-click="order = '-when_to_do.when_planned_done'">Order by Date (Z-A)</button>
+            <input style="float:right;" type="text" ng-model="search" placeholder="Search..."/>
+        </div>
+        <div id="plan-schedule" class="plan-container" >
+            <div class="day-plan" style="height: {{maxDayHeight}}px;" ng-repeat="day in currentplan.when_planned | orderBy: order | filter: search">
+                <h4>{{day.when_to_do.when_planned_done}}</h4>
+                <div class="group-day-plan" title="{{group.types}}" ng-click="selectGroup(group)" ng-repeat="group in day.groups | orderBy: 'groupnbr'" style="height: {{(100 * (group.work_units / (maxDailyWorkUnits + 150))) | number: 0}}%;">
+                    <!--<div><small>Orders: {{group.orders}}</small></div>
+                    <div><small>Fabrics: {{group.fabrics}}</small></div>
+                    <div><small>Hours represented: {{group.hours_rep}}</small></div>-->
+                    <div ng-bind-html="drawManus(group)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend/Detail -->
+    <div class="row">    
+        <div class="col-md-6">
+            <div class="detail-box">
+                <div class="detail-title">Detail:</div>   
+                <div class="detail-content">
+                    <form  name="detailForm" ng-submit="saveChanges()" novalidate>                    
+                        <input class="form-control" type="hidden" name="id" ng-model="id" ng-required="true" />
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input id="name" class="form-control" type="text" name="name" ng-model="name" placeholder="Name will display here..." ng-required="true"/>
+                            <span ng-show="detailForm.name.$touched && detailForm.name.$invalid">                            
+                                <small class="error-message">Name is a required field.</small>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label for="color">Color</label><br/>
+                            <input id="color" type="color" name="color" ng-model="color" placeholder="Color will display here..." />
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date</label>
+                            <input id="date" class="form-control" type="text" name="controldate" ng-model="controldate" placeholder="Date will display here..." ng-required="true" />
+                            <span ng-show="detailForm.controldate.$touched && detailForm.controldate.$invalid">                            
+                                <small class="error-message">Date is a required field.</small>
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            <label>Orders:</label> {{orders}}<br/>
+                            <label>Manus:</label> {{manus}}<br/>
+                            <label>Work units:</label> {{work_units}}<br/>
+                            <label>Pseudo:</label> {{pseudo}}<br/>
+                            <label>Fabrics:</label> {{fabrics}}<br/>
+                            <label>Closed:</label> {{closed}}
+                        </div>
+                        <div style="text-align: right;">
+                            <button class="btn btn-primary" ng-disabled="detailForm.$invalid">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="detail-box">
+                <div class="detail-title">Legend:</div>
+                <div class="detail-content">
+                    <label class="legend-item-label">On schedule:</label><span class="legend-item-default"></span>
+                    <label class="legend-item-label">Past due date:</label><span class="legend-item-default legend-item-late"></span>
+                </div>
+            </div>
+        </div>    
+    </div>
+</section>
+
