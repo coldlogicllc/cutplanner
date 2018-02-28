@@ -10,7 +10,7 @@ cutPlannerApp.config(['$routeProvider', '$locationProvider', function($routeProv
     
     $routeProvider
         .when('/home', {
-            templateUrl: (typeof RBT === "undefined" ? '' : RBT.cutPlannerBase) + 'views/home.html',
+            templateUrl: (typeof RBT === "undefined" ? 'https://rawgit.com/coldlogicllc/cutplanner/master/public_html/' : RBT.cutPlannerBase) + 'views/home.html',
             controller: 'cutPlannerController'
         })
         .otherwise({
@@ -45,7 +45,7 @@ cutPlannerApp.controller('cutPlannerController', ['$scope', '$http', '$window', 
         // TODO: need to build manu's to display different color vertical bars.
     };
     
-    $http.get((typeof RBT === "undefined" ? '' : RBT.cutPlannerBase) +  'data/test.json').then(function(response){
+    $http.get((typeof RBT === "undefined" ? 'https://rawgit.com/coldlogicllc/cutplanner/master/public_html/' : RBT.cutPlannerBase) +  'data/test.json').then(function(response){
         $scope.order = 'when_to_do.when_planned_done';
         $scope.dataPlans = response.data;
     });
