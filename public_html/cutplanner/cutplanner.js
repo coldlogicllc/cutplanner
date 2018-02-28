@@ -4,13 +4,13 @@ cutPlannerApp.config(['$routeProvider', '$locationProvider', function($routeProv
     
     //$locationProvider.html5Mode(true);
     
-    if(RBT === undefined || RBT.cutPlannerBase === undefined){
+    if(typeof RBT === "undefined"){
         console.log('Error: RBT.cutPlannerBase is undefined.');
     }
     
     $routeProvider
         .when('/home', {
-            templateUrl: (RBT === undefined ? '' : RBT.cutPlannerBase) + 'views/home.html',
+            templateUrl: (typeof RBT === "undefined" ? '' : RBT.cutPlannerBase) + 'views/home.html',
             controller: 'cutPlannerController'
         })
         .otherwise({
@@ -45,11 +45,11 @@ cutPlannerApp.controller('cutPlannerController', ['$scope', '$http', '$window', 
         // TODO: need to build manu's to display different color vertical bars.
     };
     
-    if(RBT === undefined){
-        console.log('Error: RBT.jsonServerUrl is undefined.');
+    if(typeof RBT === "undefined"){
+        console.log('Error: RBT.jsonServerURL is undefined.');
     }
     
-    $http.get(RBT === undefined ? 'data/test.json' : RBT.jsonServerUrl).then(function(response){
+    $http.get(typeof RBT === "undefined" ? 'data/test.json' : RBT.jsonServerURL).then(function(response){
         $scope.order = 'when_to_do.when_planned_done';
         $scope.dataPlans = response.data;
     });
