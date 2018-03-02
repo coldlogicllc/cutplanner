@@ -34,6 +34,16 @@ CutPlannerApp.prototype.addInput = function(type, className){
     return element;
 };
 
+CutPlannerApp.prototype.totalManusForDay = function(groups){
+    var totalmanus = 0;
+    for(var i = 0; i < groups.length; i++)
+    {
+        totalmanus += groups[i].manus;
+    }
+    
+    return totalmanus;
+};
+
 CutPlannerApp.prototype.loadHtml= function(widgetElementId){        
     let data = this.loadJson();
     let section = document.createElement('section');
@@ -49,12 +59,14 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
         for(let dayCounter = 0; dayCounter < data[planCounter].when_planned.length; dayCounter++)
         {
             let currentDayDiv = this.addDiv('day-plan');
+            currentDayDiv.manuPosition = 0;
             currentDayDiv.style.height = this.maxDayHeight + 'px';
             currentDayDiv.appendChild(this.addElement('h4', data[planCounter].when_planned[dayCounter].when_to_do.when_planned_done));
             currentPlanDiv.appendChild(currentDayDiv);
             this.dataDayElements.push(currentPlanDiv);
             
             // Loop groups
+            this.totalManusByCurrentDay = this.totalManusForDay(data[planCounter].when_planned[dayCounter].groups);
             for(let groupCounter = 0; groupCounter < data[planCounter].when_planned[dayCounter].groups.length; groupCounter++)
             {
                 let group = data[planCounter].when_planned[dayCounter].groups[groupCounter];
@@ -63,14 +75,32 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
                 currentGroupDiv.style.backgroundColor = data[planCounter].when_planned[dayCounter].when_to_do.when_planned_done <= group.earliest_due_date ? '#efefef' : '#f2dede';
                 currentGroupDiv.style.borderColor = group.type_color;
                 currentGroupDiv.setAttribute('title', group.types);
-                currentGroupDiv.group = group;                
+                currentGroupDiv.group = group;
+                currentGroupDiv.manusInserted = 0;
                 currentGroupDiv.onclick = function(){
                     inputId.value = this.group.groupnbr;
                     inputName.value = this.group.types;
                     inputColor.value = this.group.type_color;
                     inputDate.value = this.group.earliest_due_date;
-                    divFormGroup4.innerHTML = 'Orders: ' + this.group.orders + ', Manus: ' + this.group.manus + ', Pseudo: ' + this.group.pseudo + ', Fabrics: ' + this.group.fabrics + ', Closed: ' + this.group.closed;
-                };
+                    divFormGroup4.innerHTML = 'Group #: ' + this.group.groupnbr + ', Orders: ' + this.group.orders + ', Manus: ' + this.group.manus + ', Pseudo: ' + this.group.pseudo + ', Fabrics: ' + this.group.fabrics + ', Closed: ' + this.group.closed;
+                };                
+                
+                // Loop manu's
+                for(let manuCounter = 0; manuCounter < this.totalManusByCurrentDay; manuCounter++)
+                {
+                    let span = this.addElement('span', '', 'manu-item');
+                    
+                    // Space hasn't been occupied yet.
+                    if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < currentGroupDiv.group.manus)
+                    {
+                        span.style.borderRightColor = '#0000aa';
+                        currentDayDiv.manuPosition++;
+                        currentGroupDiv.manusInserted++;
+                    }
+                    
+                    currentGroupDiv.appendChild(span);
+                }
+                
                 currentDayDiv.appendChild(currentGroupDiv);
                 this.dataGroupElements.push(currentGroupDiv);
             }

@@ -94,13 +94,23 @@
 }
 
 .group-day-plan {
-    border: 2px solid #dfdfdf;
+    border: 3px solid #dfdfdf;
     background: #efefef;
     margin: 5px 0 0 0;
     font-size: 13px;
     overflow: hidden;
-    padding: 3px;
+    padding: 0;
     cursor: pointer;
+}
+
+/* Manus */
+span.manu-item {
+    width: 0px;
+    border-left: 1px solid transparent;
+    border-right: 3px solid transparent;
+    height: 100%;
+    display:block;
+    float:left;
 }
 
 /* Animation */
