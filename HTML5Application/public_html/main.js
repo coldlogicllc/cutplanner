@@ -8,6 +8,7 @@ function CutPlannerApp(){
     this.dataPlanElements = [];
     this.dataDayElements = [];
     this.dataGroupElements = [];
+    this.dataCustomerElements = [];
 };
 
 CutPlannerApp.prototype.addDiv = function(className, text){
@@ -44,6 +45,17 @@ CutPlannerApp.prototype.totalManusForDay = function(groups){
     return totalmanus;
 };
 
+CutPlannerApp.prototype.buildLegendForCustomers = function(element){
+    
+    for(var key in this.dataCustomerElements){
+        console.log(key + ': ' + this.dataCustomerElements[key]);
+        let span = this.addElement('span', '', 'legend-item-default');
+        span.style.borderColor = this.dataCustomerElements[key];
+        element.appendChild(this.addElement('label', key + ':', 'legend-item-label'));
+        element.appendChild(span);
+    }
+};
+
 CutPlannerApp.prototype.loadHtml= function(widgetElementId){        
     let data = this.loadJson();
     let section = document.createElement('section');
@@ -54,7 +66,7 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
         let currentPlanDiv = this.addDiv('plan-container');       
         this.dataPlanElements.push(currentPlanDiv);  
         section.appendChild(currentPlanDiv);
-
+        
         // Loop days
         for(let dayCounter = 0; dayCounter < data[planCounter].when_planned.length; dayCounter++)
         {
@@ -76,7 +88,7 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
                 currentGroupDiv.style.borderColor = group.type_color;
                 currentGroupDiv.setAttribute('title', group.types);
                 currentGroupDiv.group = group;
-                currentGroupDiv.manusInserted = 0;
+                currentGroupDiv.manusInserted = 0;                
                 currentGroupDiv.onclick = function(){
                     inputId.value = this.group.groupnbr;
                     inputName.value = this.group.types;
@@ -84,8 +96,9 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
                     inputDate.value = this.group.earliest_due_date;
                     divFormGroup4.innerHTML = 'Group #: ' + this.group.groupnbr + ', Orders: ' + this.group.orders + ', Manus: ' + this.group.manus + ', Pseudo: ' + this.group.pseudo + ', Fabrics: ' + this.group.fabrics + ', Closed: ' + this.group.closed;
                 };                
+                this.dataCustomerElements[group.types] = group.type_color;
                 
-                // Loop manu's
+                // Loop manus
                 for(let manuCounter = 0; manuCounter < this.totalManusByCurrentDay; manuCounter++)
                 {
                     let span = this.addElement('span', '', 'manu-item');
@@ -151,11 +164,12 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
     
     divFormGroup5.appendChild(buttonSubmit);
     divDetailContent1.appendChild(divFormGroup5);
-        
+            
     divDetailContent2.appendChild(this.addElement('label', 'On schedule:', 'legend-item-label'));
     divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default'));
     divDetailContent2.appendChild(this.addElement('label', 'Past due date:', 'legend-item-label'));
     divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default legend-item-late'));
+    this.buildLegendForCustomers(divDetailContent2);
     divDetailTitle1.innerHTML = 'Detail:';
     divDetailTitle2.innerHTML = 'Legend:';    
     divDetailBox1.appendChild(divDetailTitle1);
