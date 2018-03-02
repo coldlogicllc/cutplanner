@@ -128,3 +128,8 @@
 .btn {
     cursor: pointer;
 }
+
+/* RBT Table Fix */
+table, tbody, tr, td {
+    display: block;
+}
