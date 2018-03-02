@@ -48,7 +48,6 @@ CutPlannerApp.prototype.totalManusForDay = function(groups){
 CutPlannerApp.prototype.buildLegendForCustomers = function(element){
     
     for(var key in this.dataCustomerElements){
-        console.log(key + ': ' + this.dataCustomerElements[key]);
         let span = this.addElement('span', '', 'legend-item-default');
         span.style.borderColor = this.dataCustomerElements[key];
         element.appendChild(this.addElement('label', key + ':', 'legend-item-label'));
@@ -106,6 +105,7 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
                     // Space hasn't been occupied yet.
                     if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < currentGroupDiv.group.manus)
                     {
+                        // data[planCounter].when_planned[dayCounter].groups[groupCounter].manus[currentGroupDiv.manusInserted].color;
                         span.style.borderRightColor = '#0000aa';
                         currentDayDiv.manuPosition++;
                         currentGroupDiv.manusInserted++;
@@ -136,40 +136,62 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
     let divFormGroup3 = divFormGroup1.cloneNode(false);
     let divFormGroup4 = divFormGroup1.cloneNode(false);
     let divFormGroup5 = this.addDiv('form-group-right');
+    let divLegendCustomer = this.addDiv('');
     let inputName = this.addInput('text', 'input-name');
     let inputColor = this.addInput('color');
     let inputDate = this.addInput('text', 'input-date');
-    let inputId = this.addInput('hidden');
-    
+    let inputId = this.addInput('hidden');    
     let buttonSubmit = this.addInput('submit', 'btn btn-primary');
+    buttonSubmit.value = 'Save Changes';
     buttonSubmit.onclick = function(){
-        console.log("Save changes here"); // TODO: Post JSON object to server.
+        let message = '';
+        
+        if(inputId.value === ''){
+            alert('You must select a group first.\n');
+            return;
+        }
+        
+        if(inputName.value === ''){
+            message += 'You must select a name first.\n';
+        }
+        
+        if(inputColor.value === ''){
+            message += 'You must select a color first.\n';        
+        }
+        
+        if(inputDate.value === ''){
+            message += 'You must select a date first.\n';
+        }
+        
+        if(message !== ''){
+            alert(message);
+        }
+        else{
+        
+            console.log("Save changes initiated."); 
+        }
+               
     };
     
     divDetailContent1.appendChild(inputId);
-
     divFormGroup1.appendChild(this.addElement('label', 'Name:', 'detail-label'));
     divFormGroup1.appendChild(inputName);
-    divDetailContent1.appendChild(divFormGroup1); 
-    
+    divDetailContent1.appendChild(divFormGroup1);     
     divFormGroup2.appendChild(this.addElement('label', 'Color:', 'detail-label'));
     divFormGroup2.appendChild(inputColor);
-    divDetailContent1.appendChild(divFormGroup2); 
-    
+    divDetailContent1.appendChild(divFormGroup2);     
     divFormGroup3.appendChild(this.addElement('label', 'Due by:', 'detail-label'));
     divFormGroup3.appendChild(inputDate);
-    divDetailContent1.appendChild(divFormGroup3); 
-    
-    divDetailContent1.appendChild(divFormGroup4);
-    
+    divDetailContent1.appendChild(divFormGroup3);     
+    divDetailContent1.appendChild(divFormGroup4);    
     divFormGroup5.appendChild(buttonSubmit);
-    divDetailContent1.appendChild(divFormGroup5);
-            
+    divDetailContent1.appendChild(divFormGroup5);            
     divDetailContent2.appendChild(this.addElement('label', 'On schedule:', 'legend-item-label'));
     divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default'));
     divDetailContent2.appendChild(this.addElement('label', 'Past due date:', 'legend-item-label'));
     divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default legend-item-late'));
-    this.buildLegendForCustomers(divDetailContent2);
+    divDetailContent2.appendChild(divLegendCustomer);
+    this.buildLegendForCustomers(divLegendCustomer);
     divDetailTitle1.innerHTML = 'Detail:';
     divDetailTitle2.innerHTML = 'Legend:';    
     divDetailBox1.appendChild(divDetailTitle1);
@@ -230,7 +252,7 @@ CutPlannerApp.prototype.loadJson = function(){
                                 "earliest_due_date": "2018-12-07",
                                 "types": "P-Scrubs, P-Sleepwear",
                                 "hours_rep": 1.34,
-                                "type_color": "#bf5cd5"
+                                "type_color": "#ffff00"
                         }, {
                                 "groupnbr": 4,
                                 "orders": 4,
@@ -775,7 +797,7 @@ CutPlannerApp.prototype.loadJson = function(){
                                 "earliest_due_date": "2017-12-07",
                                 "types": "P-Scrubs, P-Sleepwear",
                                 "hours_rep": 1.34,
-                                "type_color": "#bf5cd5"
+                                "type_color": "#ffff00"
                         }, {
                                 "groupnbr": 4,
                                 "orders": 4,
