@@ -10,14 +10,6 @@ function CutPlannerApp(){
     this.dataGroupElements = [];
 };
 
-var CutPlannerAppEvents = {
-    
-    SaveChanges: function(){
-        console.log('SaveChanges() called.');
-        // TODO: Send JSON back to server.
-    }
-};
-
 CutPlannerApp.prototype.addDiv = function(className, text){
     var div = document.createElement('div');
     div.setAttribute('class', className);   
@@ -42,7 +34,7 @@ CutPlannerApp.prototype.addInput = function(type, className){
     return element;
 };
 
-CutPlannerApp.prototype.loadHtml= function(){        
+CutPlannerApp.prototype.loadHtml= function(widgetElementId){        
     let data = this.loadJson();
     let section = document.createElement('section');
     
@@ -107,6 +99,9 @@ CutPlannerApp.prototype.loadHtml= function(){
     let inputId = this.addInput('hidden');
     
     let buttonSubmit = this.addInput('submit', 'btn btn-primary');
+    buttonSubmit.onclick = function(){
+        console.log("Save changes here"); // TODO: Post JSON object to server.
+    };
     
     divDetailContent1.appendChild(inputId);
 
@@ -142,9 +137,8 @@ CutPlannerApp.prototype.loadHtml= function(){
     divRow.appendChild(divColHalf1);
     divRow.appendChild(divColHalf2);
     
-    section.appendChild(divRow);
-    
-    document.getElementById('rbt_widget_cutPlanner').appendChild(section);
+    section.appendChild(divRow);    
+    document.getElementById(widgetElementId).appendChild(section);
 };
 
 CutPlannerApp.prototype.loadJson = function(){
