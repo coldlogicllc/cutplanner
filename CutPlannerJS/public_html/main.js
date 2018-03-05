@@ -5,9 +5,9 @@ function CutPlannerApp(){
     this.maxDailyWorkUnits = 1270;   
     
     // Data arrays
-    this.dataPlanElements = [];
-    this.dataDayElements = [];
-    this.dataGroupElements = [];
+    //this.dataPlanElements = [];
+    //this.dataDayElements = [];
+    //this.dataGroupElements = [];
     this.dataCustomerElements = [];
 };
 
@@ -56,6 +56,12 @@ CutPlannerApp.prototype.buildLegendForCustomers = function(element){
 };
 
 CutPlannerApp.prototype.loadHtml= function(widget_element_id){        
+    
+    RBT.jsonServerURL = 'http://192.168.0.112:8880/';
+    RBT.putGetJson('CutPlanner', {}, function(response){
+        console.log(response);
+    }, null);
+    
     let data = this.loadJson();
     let section = document.createElement('section');
     
@@ -63,7 +69,7 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
     for(let planCounter = 0; planCounter < data.length; planCounter++)
     {
         let currentPlanDiv = this.addDiv('plan-container');       
-        this.dataPlanElements.push(currentPlanDiv);  
+        //this.dataPlanElements.push(currentPlanDiv);  
         section.appendChild(currentPlanDiv);
         
         // Loop days
@@ -74,7 +80,7 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
             currentDayDiv.style.height = this.maxDayHeight + 'px';
             currentDayDiv.appendChild(this.addElement('h4', data[planCounter].when_planned[dayCounter].when_to_do.when_planned_done));
             currentPlanDiv.appendChild(currentDayDiv);
-            this.dataDayElements.push(currentPlanDiv);
+            //this.dataDayElements.push(currentPlanDiv);
             
             // Loop groups
             this.totalManusByCurrentDay = this.totalManusForDay(data[planCounter].when_planned[dayCounter].groups);
@@ -115,36 +121,89 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
                 }
                 
                 currentDayDiv.appendChild(currentGroupDiv);
-                this.dataGroupElements.push(currentGroupDiv);
-            }
-            
+                //this.dataGroupElements.push(currentGroupDiv);
+            }            
         }
     }
     
-    // Build forms
-    let divRow = this.addDiv('row');
-    let divColHalf1 = this.addDiv('col-md-6');
-    let divColHalf2 = divColHalf1.cloneNode(false);
-    let divDetailBox1 = this.addDiv('detail-box');
-    let divDetailBox2 = divDetailBox1.cloneNode(false);
-    let divDetailTitle1 = this.addDiv('detail-title');
-    let divDetailTitle2 = divDetailTitle1.cloneNode(false);
-    let divDetailContent1 = this.addDiv('detail-content');
-    let divDetailContent2 = this.addDiv('detail-content');
-    let divFormGroup1 = this.addDiv('form-group');
-    let divFormGroup2 = divFormGroup1.cloneNode(false);
-    let divFormGroup3 = divFormGroup1.cloneNode(false);
-    let divFormGroup4 = divFormGroup1.cloneNode(false);
-    let divFormGroup5 = this.addDiv('form-group-right');
-    let divFormGroup6 = divFormGroup1.cloneNode(false);
-    let divLegendCustomer = this.addDiv('');
-    let inputName = this.addInput('text', 'input-name');    
-    let inputColor = this.addInput('color');
-    let inputDate = this.addInput('text', 'input-date');    
-    let inputDateSales = this.addInput('text', 'input-date');    
-    let inputId = this.addInput('hidden');    
-    let buttonSubmit = this.addInput('submit', 'btn btn-primary');
+    // Build list view
+    let divRow = this.addDiv('list-container');
+    for(let planCounter = 0; planCounter < data.length; planCounter++)
+    {
+        let detailList = this.addDiv('detail-list');        
+        divRow.appendChild(detailList);
+        
+        // Loop days
+        for(let dayCounter = 0; dayCounter < data[planCounter].when_planned.length; dayCounter++)
+        {
+            let day = data[planCounter].when_planned[dayCounter];
+            let divDay = this.addDiv('detail-list-day row');
+            let divDayHeader = this.addDiv('detail-list-day-header');
+            let divDayContent = this.addDiv('detail-list-day-content col-md-12');
+            divDayHeader.innerHTML = day.when_to_do.when_planned_done;
+            divDay.appendChild(divDayHeader);
+            divDay.appendChild(divDayContent);
+            detailList.appendChild(divDay);
+              
+            for(let groupCounter = 0; groupCounter < data[planCounter].when_planned[dayCounter].groups.length; groupCounter++)
+            {
+                let group = day.groups[groupCounter];
+                let divGroup = this.addDiv('detail-list-day-group');                
+                let inputName = this.addInput('text', 'input-name'); 
+                inputName.value = group.types;
+                let inputColor = this.addInput('color', 'input-color');
+                inputColor.value = group.type_color;
+                let inputDate = this.addInput('text', 'input-date');
+                inputDate.value = group.earliest_due_date;
+                inputDate.style.backgroundColor = day.when_to_do.when_planned_done <= group.earliest_due_date ? '#ffffff' : '#f2dede';
+                let buttonSubmit = this.addInput('button', 'btn btn-primary');
+                
+                buttonSubmit.value = 'Save Row';
+                buttonSubmit.group = group;
+                buttonSubmit.inputName = inputName;
+                buttonSubmit.inputColor = inputColor;
+                buttonSubmit.inputDate = inputDate;
+                buttonSubmit.onclick = function(){
+                    console.log(this.inputName.value);
+                    
+                    
+                };
+                divGroup.appendChild(inputName);
+                divGroup.appendChild(inputColor);
+                divGroup.appendChild(inputDate);
+                divGroup.appendChild(buttonSubmit);
+                divDayContent.appendChild(divGroup);                         
+            }
+            
+            divDay.appendChild(divDayContent);
+        }
+    }
+    section.appendChild(divRow);
     
+    // Build forms
+    //let divRow = this.addDiv('row');
+    //let divColHalf1 = this.addDiv('col-md-12');
+    //let divColHalf2 = divColHalf1.cloneNode(false);
+    //let divDetailBox1 = this.addDiv('detail-box');
+    //let divDetailBox2 = divDetailBox1.cloneNode(false);
+    //let divDetailTitle1 = this.addDiv('detail-title');
+    //let divDetailTitle2 = divDetailTitle1.cloneNode(false);
+    //let divDetailContent1 = this.addDiv('detail-content');
+    //let divDetailContent2 = this.addDiv('detail-content');
+    //let divFormGroup1 = this.addDiv('form-group');
+    //let divFormGroup2 = divFormGroup1.cloneNode(false);
+    //let divFormGroup3 = divFormGroup1.cloneNode(false);
+    //let divFormGroup4 = divFormGroup1.cloneNode(false);
+    //let divFormGroup5 = this.addDiv('form-group-right');
+    //let divFormGroup6 = divFormGroup1.cloneNode(false);
+    //let divLegendCustomer = this.addDiv('');
+    //let inputName = this.addInput('text', 'input-name');    
+    //let inputColor = this.addInput('color');
+    //let inputDate = this.addInput('text', 'input-date');    
+    //let inputDateSales = this.addInput('text', 'input-date');    
+    //let inputId = this.addInput('hidden');    
+    //let buttonSubmit = this.addInput('submit', 'btn btn-primary');
+    /*
     inputName.placeholder = 'Name will appear here...';
     inputDate.placeholder = 'Date...';
     inputDateSales.placeholder = 'Date...';    
@@ -173,47 +232,44 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
             alert(message);
         }
         else{
-        
-            console.log("Save changes initiated for " + inputName.value + '.'); 
-            RBT.jsonServerURL = 'http://192.168.0.112:8880/';
             RBT.putGetJson('CutPlanner', {"id" : inputId.value, "name": inputName.value, "color": inputColor.value, "date": inputDate.value }, function(result){
                console.log('Success'); 
             }, this);
         }               
-    };
+    };*/
     
-    divDetailContent1.appendChild(inputId);
-    divFormGroup1.appendChild(this.addElement('label', 'Name:', 'detail-label'));
-    divFormGroup1.appendChild(inputName);
-    divDetailContent1.appendChild(divFormGroup1);     
-    divFormGroup2.appendChild(this.addElement('label', 'Border color:', 'detail-label'));
-    divFormGroup2.appendChild(inputColor);
-    divDetailContent1.appendChild(divFormGroup2);     
-    divFormGroup3.appendChild(this.addElement('label', 'Customer due by:', 'detail-label'));
-    divFormGroup3.appendChild(inputDate);
-    divDetailContent1.appendChild(divFormGroup3);    
-    divDetailContent1.appendChild(divFormGroup6);
-    divDetailContent1.appendChild(divFormGroup4); 
-    divFormGroup6.appendChild(this.addElement('label', 'Salesperson due by:', 'detail-label'));
-    divFormGroup6.appendChild(inputDateSales);
-    divFormGroup5.appendChild(buttonSubmit);
-    divDetailContent1.appendChild(divFormGroup5);            
-    divDetailContent2.appendChild(this.addElement('label', 'On schedule:', 'legend-item-label'));
-    divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default'));
-    divDetailContent2.appendChild(this.addElement('label', 'Past due date:', 'legend-item-label'));
-    divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default legend-item-late'));
-    divDetailContent2.appendChild(divLegendCustomer);
-    this.buildLegendForCustomers(divLegendCustomer);
-    divDetailTitle1.innerHTML = 'Detail:';
-    divDetailTitle2.innerHTML = 'Legend:';    
-    divDetailBox1.appendChild(divDetailTitle1);
-    divDetailBox2.appendChild(divDetailTitle2);
-    divDetailBox1.appendChild(divDetailContent1);
-    divDetailBox2.appendChild(divDetailContent2);
-    divColHalf1.appendChild(divDetailBox1);
-    divColHalf2.appendChild(divDetailBox2);
-    divRow.appendChild(divColHalf1);
-    divRow.appendChild(divColHalf2);    
+    //divDetailContent1.appendChild(inputId);
+    //divFormGroup1.appendChild(this.addElement('label', 'Name:', 'detail-label'));
+    //divFormGroup1.appendChild(inputName);
+    //divDetailContent1.appendChild(divFormGroup1);     
+    //divFormGroup2.appendChild(this.addElement('label', 'Border color:', 'detail-label'));
+    //divFormGroup2.appendChild(inputColor);
+    //divDetailContent1.appendChild(divFormGroup2);     
+    //divFormGroup3.appendChild(this.addElement('label', 'Customer due by:', 'detail-label'));
+    //divFormGroup3.appendChild(inputDate);
+    //divDetailContent1.appendChild(divFormGroup3);    
+    //divDetailContent1.appendChild(divFormGroup6);
+    //divDetailContent1.appendChild(divFormGroup4); 
+    //divFormGroup6.appendChild(this.addElement('label', 'Salesperson due by:', 'detail-label'));
+    //divFormGroup6.appendChild(inputDateSales);
+    //divFormGroup5.appendChild(buttonSubmit);
+    //divDetailContent1.appendChild(divFormGroup5);            
+    //divDetailContent2.appendChild(this.addElement('label', 'On schedule:', 'legend-item-label'));
+    //divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default'));
+    //divDetailContent2.appendChild(this.addElement('label', 'Past due date:', 'legend-item-label'));
+    //divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default legend-item-late'));
+    //divDetailContent2.appendChild(divLegendCustomer);
+    //this.buildLegendForCustomers(divLegendCustomer);
+    //divDetailTitle1.innerHTML = 'Detail:';
+    //divDetailTitle2.innerHTML = 'Legend:';    
+    //divDetailBox1.appendChild(divDetailTitle1);
+    //divDetailBox2.appendChild(divDetailTitle2);
+    //divDetailBox1.appendChild(divDetailContent1);
+    //divDetailBox2.appendChild(divDetailContent2);
+    //divColHalf1.appendChild(divDetailBox1);
+    //divColHalf2.appendChild(divDetailBox2);
+    //divRow.appendChild(divColHalf1);
+    //divRow.appendChild(divColHalf2);    
     section.appendChild(divRow);    
     
     document.getElementById(widget_element_id).appendChild(section);

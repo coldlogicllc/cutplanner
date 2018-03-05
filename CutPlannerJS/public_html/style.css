@@ -58,10 +58,6 @@
     text-align: right;
 }
 
-/*.input-name {
-    width: 400px;
-}*/
-
 .input-date {
     width: 100px;
 }
@@ -101,6 +97,37 @@
     overflow: hidden;
     padding: 0;
     cursor: pointer;
+}
+
+/* Detail List View */
+.list-container {
+    margin: 15px;
+    overflow-y: scroll;
+    max-height: 300px;
+}
+
+.detail-list-day {
+    margin: 20px 0;
+}
+
+.detail-list-day-header {
+    display: inline-block;
+    width: 200px;
+    background: #efefef;
+    border-radius: 10px 10px 0 0;
+    padding: 7px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 18px;
+}
+
+.detail-list-day-content {
+    background: #efefef;
+    padding: 10px;
+}
+
+.detail-list-day-group {
+    padding: 7px 0;
 }
 
 /* Manus */
