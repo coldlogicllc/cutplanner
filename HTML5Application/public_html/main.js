@@ -136,12 +136,18 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
     let divFormGroup3 = divFormGroup1.cloneNode(false);
     let divFormGroup4 = divFormGroup1.cloneNode(false);
     let divFormGroup5 = this.addDiv('form-group-right');
+    let divFormGroup6 = divFormGroup1.cloneNode(false);
     let divLegendCustomer = this.addDiv('');
-    let inputName = this.addInput('text', 'input-name');
+    let inputName = this.addInput('text', 'input-name');    
     let inputColor = this.addInput('color');
-    let inputDate = this.addInput('text', 'input-date');
+    let inputDate = this.addInput('text', 'input-date');    
+    let inputDateSales = this.addInput('text', 'input-date');    
     let inputId = this.addInput('hidden');    
     let buttonSubmit = this.addInput('submit', 'btn btn-primary');
+    
+    inputName.placeholder = 'Name will appear here...';
+    inputDate.placeholder = 'Date...';
+    inputDateSales.placeholder = 'Date...';    
     buttonSubmit.value = 'Save Changes';
     buttonSubmit.onclick = function(){
         let message = '';
@@ -168,22 +174,27 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
         }
         else{
         
-            console.log("Save changes initiated."); 
-        }
-               
+            console.log("Save changes initiated for " + inputName.value + '.'); 
+            RBT.putGetJson('cutplanner', {"id" : inputId.value, "name": inputName.value, "color": inputColor.value, "date": inputDate.value }, function(result){
+               console.log('Success'); 
+            }, this);
+        }               
     };
     
     divDetailContent1.appendChild(inputId);
     divFormGroup1.appendChild(this.addElement('label', 'Name:', 'detail-label'));
     divFormGroup1.appendChild(inputName);
     divDetailContent1.appendChild(divFormGroup1);     
-    divFormGroup2.appendChild(this.addElement('label', 'Color:', 'detail-label'));
+    divFormGroup2.appendChild(this.addElement('label', 'Border color:', 'detail-label'));
     divFormGroup2.appendChild(inputColor);
     divDetailContent1.appendChild(divFormGroup2);     
-    divFormGroup3.appendChild(this.addElement('label', 'Due by:', 'detail-label'));
+    divFormGroup3.appendChild(this.addElement('label', 'Customer due by:', 'detail-label'));
     divFormGroup3.appendChild(inputDate);
-    divDetailContent1.appendChild(divFormGroup3);     
-    divDetailContent1.appendChild(divFormGroup4);    
+    divDetailContent1.appendChild(divFormGroup3);    
+    divDetailContent1.appendChild(divFormGroup6);
+    divDetailContent1.appendChild(divFormGroup4); 
+    divFormGroup6.appendChild(this.addElement('label', 'Salesperson due by:', 'detail-label'));
+    divFormGroup6.appendChild(inputDateSales);
     divFormGroup5.appendChild(buttonSubmit);
     divDetailContent1.appendChild(divFormGroup5);            
     divDetailContent2.appendChild(this.addElement('label', 'On schedule:', 'legend-item-label'));
@@ -201,9 +212,9 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
     divColHalf1.appendChild(divDetailBox1);
     divColHalf2.appendChild(divDetailBox2);
     divRow.appendChild(divColHalf1);
-    divRow.appendChild(divColHalf2);
-    
+    divRow.appendChild(divColHalf2);    
     section.appendChild(divRow);    
+    
     document.getElementById(widgetElementId).appendChild(section);
 };
 
@@ -1306,4 +1317,3 @@ CutPlannerApp.prototype.loadJson = function(){
                 }]
         }];
 };
-
