@@ -2280,6 +2280,7 @@ RBT.hopperPut = function () {
 RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
 
     if (saveButtonElement) {
+        saveButtonElement.savedStyle = saveButtonElement.style;
         saveButtonElement.savedHTML = saveButtonElement.innerHTML;
         saveButtonElement.innerHTML = '<i class="fa fa-cog fa-spin fa-1x fa-fw"></i>';
         saveButtonElement.style.background = "orange";
@@ -2294,7 +2295,8 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
             if (result.success) {
                 if (saveButtonElement) {
                     saveButtonElement.innerHTML = saveButtonElement.savedHTML;
-                    saveButtonElement.style.background = "white";
+                    //saveButtonElement.style.background = "white";
+                    saveButtonElement.style = saveButtonElement.savedStyle;
                 }
                 // alert("saved");
                 console.log("success ", result);
