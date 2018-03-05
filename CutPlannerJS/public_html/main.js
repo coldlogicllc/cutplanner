@@ -175,6 +175,7 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
         else{
         
             console.log("Save changes initiated for " + inputName.value + '.'); 
+            RBT.jsonServerURL = '';
             RBT.putGetJson('cutplanner', {"id" : inputId.value, "name": inputName.value, "color": inputColor.value, "date": inputDate.value }, function(result){
                console.log('Success'); 
             }, this);
