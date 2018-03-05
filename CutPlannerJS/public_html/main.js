@@ -11,26 +11,26 @@ function CutPlannerApp(){
     this.dataCustomerElements = [];
 };
 
-CutPlannerApp.prototype.addDiv = function(className, text){
+CutPlannerApp.prototype.addDiv = function(class_name, text){
     var div = document.createElement('div');
-    div.setAttribute('class', className);   
+    div.setAttribute('class', class_name);   
     div.innerHTML = (typeof text === "undefined" ? '' : text);
     
     return div;
 };
 
-CutPlannerApp.prototype.addElement = function(tagName, text, className){
-    var element = document.createElement(tagName);
-    element.className = typeof className !== "undefined" ? className :  '';
+CutPlannerApp.prototype.addElement = function(tag_name, text, class_name){
+    var element = document.createElement(tag_name);
+    element.className = typeof class_name !== "undefined" ? class_name :  '';
     element.innerHTML = text;    
     
     return element;
 };
 
-CutPlannerApp.prototype.addInput = function(type, className){
+CutPlannerApp.prototype.addInput = function(type, class_name){
     var element = document.createElement('input');
     element.setAttribute('type', type);
-    element.className = typeof className !== "undefined" ? className :  '';
+    element.className = typeof class_name !== "undefined" ? class_name :  '';
     
     return element;
 };
@@ -55,7 +55,7 @@ CutPlannerApp.prototype.buildLegendForCustomers = function(element){
     }
 };
 
-CutPlannerApp.prototype.loadHtml= function(widgetElementId){        
+CutPlannerApp.prototype.loadHtml= function(widget_element_id){        
     let data = this.loadJson();
     let section = document.createElement('section');
     
@@ -176,7 +176,7 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
         
             console.log("Save changes initiated for " + inputName.value + '.'); 
             RBT.jsonServerURL = '';
-            RBT.putGetJson('cutplanner', {"id" : inputId.value, "name": inputName.value, "color": inputColor.value, "date": inputDate.value }, function(result){
+            RBT.putGetJson('CutPlanner', {"id" : inputId.value, "name": inputName.value, "color": inputColor.value, "date": inputDate.value }, function(result){
                console.log('Success'); 
             }, this);
         }               
@@ -216,7 +216,7 @@ CutPlannerApp.prototype.loadHtml= function(widgetElementId){
     divRow.appendChild(divColHalf2);    
     section.appendChild(divRow);    
     
-    document.getElementById(widgetElementId).appendChild(section);
+    document.getElementById(widget_element_id).appendChild(section);
 };
 
 CutPlannerApp.prototype.loadJson = function(){
