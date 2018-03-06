@@ -8,7 +8,7 @@ function CutPlannerApp(){
     //this.dataPlanElements = [];
     //this.dataDayElements = [];
     //this.dataGroupElements = [];
-    this.dataCustomerElements = [];
+    //this.dataCustomerElements = [];
 };
 
 CutPlannerApp.prototype.addDiv = function(class_name, text){
@@ -55,22 +55,13 @@ CutPlannerApp.prototype.buildLegendForCustomers = function(element){
     }
 };
 
-CutPlannerApp.prototype.loadHtml= function(widget_element_id){        
-    
-    RBT.jsonServerURL = 'http://192.168.0.112:8880/';
-    RBT.putGetJson('CutPlanner', {}, function(response){
-        console.log(response);
-    }, null);
-    
-    let data = this.loadJson();
-    let section = document.createElement('section');
-    
+CutPlannerApp.prototype.buildGrid = function(rootElement, data){
     // Build grid
     for(let planCounter = 0; planCounter < data.length; planCounter++)
     {
         let currentPlanDiv = this.addDiv('plan-container');       
         //this.dataPlanElements.push(currentPlanDiv);  
-        section.appendChild(currentPlanDiv);
+        rootElement.appendChild(currentPlanDiv);
         
         // Loop days
         for(let dayCounter = 0; dayCounter < data[planCounter].when_planned.length; dayCounter++)
@@ -93,15 +84,16 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
                 currentGroupDiv.style.borderColor = group.type_color;
                 currentGroupDiv.setAttribute('title', group.types);
                 currentGroupDiv.group = group;
-                currentGroupDiv.manusInserted = 0;                
+                currentGroupDiv.manusInserted = 0;  
+                /*
                 currentGroupDiv.onclick = function(){
                     inputId.value = this.group.groupnbr;
                     inputName.value = this.group.types;
                     inputColor.value = this.group.type_color;
                     inputDate.value = this.group.earliest_due_date;
                     divFormGroup4.innerHTML = 'Group #: ' + this.group.groupnbr + ', Orders: ' + this.group.orders + ', Manus: ' + this.group.manus + ', Pseudo: ' + this.group.pseudo + ', Fabrics: ' + this.group.fabrics + ', Closed: ' + this.group.closed;
-                };                
-                this.dataCustomerElements[group.types] = group.type_color;
+                };*/                
+                //this.dataCustomerElements[group.types] = group.type_color;
                 
                 // Loop manus
                 for(let manuCounter = 0; manuCounter < this.totalManusByCurrentDay; manuCounter++)
@@ -125,7 +117,28 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
             }            
         }
     }
+};
+
+CutPlannerApp.prototype.buildActionMenu = function(rootElement){
+    // Build action buttons
+    let divActionRow = this.addDiv('action-container');
+    let buttonPlanUpdate = this.addInput('button', 'btn btn-primary');
+    buttonPlanUpdate.value = 'Update Plan';
+    buttonPlanUpdate.context = this;
+    buttonPlanUpdate.addEventListener('click', function(){
+        // TODO: Send JSON changes to server
+        console.log('Grid should be refreshed here.');
+        
+        // Refreshes the grid
+        this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
+        this.context.buildGrid(this.context.gridDiv, this.context.loadJson());        
+    });
     
+    divActionRow.appendChild(buttonPlanUpdate);
+    rootElement.appendChild(divActionRow);
+};
+
+CutPlannerApp.prototype.buildListView = function(rootElement, data){
     // Build list view
     let divRow = this.addDiv('list-container');
     for(let planCounter = 0; planCounter < data.length; planCounter++)
@@ -138,10 +151,8 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
         {
             let day = data[planCounter].when_planned[dayCounter];
             let divDay = this.addDiv('detail-list-day row');
-            let divDayHeader = this.addDiv('detail-list-day-header');
             let divDayContent = this.addDiv('detail-list-day-content col-md-12');
-            divDayHeader.innerHTML = day.when_to_do.when_planned_done;
-            divDay.appendChild(divDayHeader);
+
             divDay.appendChild(divDayContent);
             detailList.appendChild(divDay);
               
@@ -158,15 +169,16 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
                 inputDate.style.backgroundColor = day.when_to_do.when_planned_done <= group.earliest_due_date ? '#ffffff' : '#f2dede';
                 let buttonSubmit = this.addInput('button', 'btn btn-primary');
                 
-                buttonSubmit.value = 'Save Row';
+                buttonSubmit.value = 'Save Changes';
                 buttonSubmit.group = group;
                 buttonSubmit.inputName = inputName;
                 buttonSubmit.inputColor = inputColor;
                 buttonSubmit.inputDate = inputDate;
                 buttonSubmit.onclick = function(){
-                    console.log(this.inputName.value);
-                    
-                    
+                    console.log('Changes should be recorded here. ' + this.inputName.value);
+                    //if(something changed){
+                        divGroup.style.background = '#ffe160';
+                    //}
                 };
                 divGroup.appendChild(inputName);
                 divGroup.appendChild(inputColor);
@@ -178,99 +190,29 @@ CutPlannerApp.prototype.loadHtml= function(widget_element_id){
             divDay.appendChild(divDayContent);
         }
     }
-    section.appendChild(divRow);
     
-    // Build forms
-    //let divRow = this.addDiv('row');
-    //let divColHalf1 = this.addDiv('col-md-12');
-    //let divColHalf2 = divColHalf1.cloneNode(false);
-    //let divDetailBox1 = this.addDiv('detail-box');
-    //let divDetailBox2 = divDetailBox1.cloneNode(false);
-    //let divDetailTitle1 = this.addDiv('detail-title');
-    //let divDetailTitle2 = divDetailTitle1.cloneNode(false);
-    //let divDetailContent1 = this.addDiv('detail-content');
-    //let divDetailContent2 = this.addDiv('detail-content');
-    //let divFormGroup1 = this.addDiv('form-group');
-    //let divFormGroup2 = divFormGroup1.cloneNode(false);
-    //let divFormGroup3 = divFormGroup1.cloneNode(false);
-    //let divFormGroup4 = divFormGroup1.cloneNode(false);
-    //let divFormGroup5 = this.addDiv('form-group-right');
-    //let divFormGroup6 = divFormGroup1.cloneNode(false);
-    //let divLegendCustomer = this.addDiv('');
-    //let inputName = this.addInput('text', 'input-name');    
-    //let inputColor = this.addInput('color');
-    //let inputDate = this.addInput('text', 'input-date');    
-    //let inputDateSales = this.addInput('text', 'input-date');    
-    //let inputId = this.addInput('hidden');    
-    //let buttonSubmit = this.addInput('submit', 'btn btn-primary');
-    /*
-    inputName.placeholder = 'Name will appear here...';
-    inputDate.placeholder = 'Date...';
-    inputDateSales.placeholder = 'Date...';    
-    buttonSubmit.value = 'Save Changes';
-    buttonSubmit.onclick = function(){
-        let message = '';
-        
-        if(inputId.value === ''){
-            alert('You must select a group first.\n');
-            return;
-        }
-        
-        if(inputName.value === ''){
-            message += 'You must select a name first.\n';
-        }
-        
-        if(inputColor.value === ''){
-            message += 'You must select a color first.\n';        
-        }
-        
-        if(inputDate.value === ''){
-            message += 'You must select a date first.\n';
-        }
-        
-        if(message !== ''){
-            alert(message);
-        }
-        else{
-            RBT.putGetJson('CutPlanner', {"id" : inputId.value, "name": inputName.value, "color": inputColor.value, "date": inputDate.value }, function(result){
-               console.log('Success'); 
-            }, this);
-        }               
-    };*/
+    rootElement.appendChild(divRow); 
+};
+
+CutPlannerApp.prototype.loadHtml = function(widget_element_id){        
     
-    //divDetailContent1.appendChild(inputId);
-    //divFormGroup1.appendChild(this.addElement('label', 'Name:', 'detail-label'));
-    //divFormGroup1.appendChild(inputName);
-    //divDetailContent1.appendChild(divFormGroup1);     
-    //divFormGroup2.appendChild(this.addElement('label', 'Border color:', 'detail-label'));
-    //divFormGroup2.appendChild(inputColor);
-    //divDetailContent1.appendChild(divFormGroup2);     
-    //divFormGroup3.appendChild(this.addElement('label', 'Customer due by:', 'detail-label'));
-    //divFormGroup3.appendChild(inputDate);
-    //divDetailContent1.appendChild(divFormGroup3);    
-    //divDetailContent1.appendChild(divFormGroup6);
-    //divDetailContent1.appendChild(divFormGroup4); 
-    //divFormGroup6.appendChild(this.addElement('label', 'Salesperson due by:', 'detail-label'));
-    //divFormGroup6.appendChild(inputDateSales);
-    //divFormGroup5.appendChild(buttonSubmit);
-    //divDetailContent1.appendChild(divFormGroup5);            
-    //divDetailContent2.appendChild(this.addElement('label', 'On schedule:', 'legend-item-label'));
-    //divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default'));
-    //divDetailContent2.appendChild(this.addElement('label', 'Past due date:', 'legend-item-label'));
-    //divDetailContent2.appendChild(this.addElement('span', '', 'legend-item-default legend-item-late'));
-    //divDetailContent2.appendChild(divLegendCustomer);
-    //this.buildLegendForCustomers(divLegendCustomer);
-    //divDetailTitle1.innerHTML = 'Detail:';
-    //divDetailTitle2.innerHTML = 'Legend:';    
-    //divDetailBox1.appendChild(divDetailTitle1);
-    //divDetailBox2.appendChild(divDetailTitle2);
-    //divDetailBox1.appendChild(divDetailContent1);
-    //divDetailBox2.appendChild(divDetailContent2);
-    //divColHalf1.appendChild(divDetailBox1);
-    //divColHalf2.appendChild(divDetailBox2);
-    //divRow.appendChild(divColHalf1);
-    //divRow.appendChild(divColHalf2);    
-    section.appendChild(divRow);    
+    RBT.jsonServerURL = 'http://192.168.0.112:8880/';
+    /* RBT.putGetJson('CutPlanner', {}, function(response){
+        console.log(response);
+    }, null);*/
+    
+    let data = this.loadJson();
+    let section = document.createElement('section');
+    
+    this.gridDiv = this.addDiv('grid-section');
+    
+    this.buildGrid(this.gridDiv, data);
+    
+    section.appendChild(this.gridDiv);
+    
+    this.buildActionMenu(section);
+    
+    this.buildListView(section, data);
     
     document.getElementById(widget_element_id).appendChild(section);
 };

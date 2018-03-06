@@ -99,6 +99,13 @@
     cursor: pointer;
 }
 
+/* Action Container */
+
+.action-container {
+    margin: 0 15px;
+    text-align: right;
+}
+
 /* Detail List View */
 .list-container {
     margin: 15px;
@@ -123,11 +130,11 @@
 
 .detail-list-day-content {
     background: #efefef;
-    padding: 10px;
+    padding: 2px;
 }
 
 .detail-list-day-group {
-    padding: 7px 0;
+    padding: 2px 0;
 }
 
 /* Manus */
