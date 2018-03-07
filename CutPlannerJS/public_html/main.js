@@ -49,7 +49,7 @@ CutPlannerApp.prototype.buildLegendForCustomers = function(element){
     }
 };
 
-CutPlannerApp.prototype.buildGrid = function(rootElement, data){
+CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
     // Build grid
     for(let planCounter = 0; planCounter < data.length; planCounter++)
     {
@@ -100,34 +100,13 @@ CutPlannerApp.prototype.buildGrid = function(rootElement, data){
     }
 };
 
-/*
-CutPlannerApp.prototype.buildActionMenu = function(rootElement){
-    // Build action buttons
-    let divActionRow = this.addDiv('action-container');
-    this.buttonPlanUpdate = this.addInput('button', 'btn btn-primary');
-    this.buttonPlanUpdate.value = 'Update Plan';
-    this.buttonPlanUpdate.context = this;
-    this.buttonPlanUpdate.disabled = true;
-    this.buttonPlanUpdate.addEventListener('click', function(){
-        // TODO: Send JSON changes to server
-        console.log('Grid should be refreshed here.');
-        
-        // Refreshes the grid
-        this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
-        this.context.buildGrid(this.context.gridDiv, this.context.loadJson());        
-    });
-    
-    divActionRow.appendChild(this.buttonPlanUpdate);
-    rootElement.appendChild(divActionRow);
-};*/
-
-CutPlannerApp.prototype.buildListView = function(rootElement, data){
+CutPlannerApp.prototype.buildDemandGroupList = function(rootElement, data){
     // Build list view
-    let divRow = this.addDiv('list-container');
+
     for(let planCounter = 0; planCounter < data.length; planCounter++)
     {
         let detailList = this.addDiv('detail-list');        
-        divRow.appendChild(detailList);
+        rootElement.appendChild(detailList);
         
         // Loop days
         for(let dayCounter = 0; dayCounter < data[planCounter].when_planned.length; dayCounter++)
@@ -202,7 +181,7 @@ CutPlannerApp.prototype.buildListView = function(rootElement, data){
         }
     }
     
-    rootElement.appendChild(divRow); 
+    //rootElement.appendChild(divRow); 
 };
 
 CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
@@ -210,22 +189,22 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
     let dropDownPlanSelectorButton = this.addElement('button', 'Select a draft plan', 'btn btn-secondary dropdown-toggle');
     let dropDownPlanSelectorOptions = this.addDiv('dropdown-menu');
     let buttonAddNew = this.addInput('button', 'btn btn-success');
+    //let buttonRemove
     let msgPlanWorkingOn = this.addElement('span', '', 'msg-current-plan');
     let dropDownMenuIdentifier = 'dropdownMenuButton_' + Math.floor((Math.random() * 10000000000) + 1);
     
-    msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
-    
+    msgPlanWorkingOn.innerHTML = 'Working on a new plan...';    
     dropDownPlanSelectorButton.id = dropDownMenuIdentifier;
     dropDownPlanSelectorButton.setAttribute('data-toggle', 'dropdown');
     dropDownPlanSelectorButton.setAttribute('aria-haspopup', 'true');
     dropDownPlanSelectorButton.setAttribute('aria-expanded', 'false');
-    dropDownPlanSelectorButton.setAttribute('type', 'button');
-    
-    dropDownPlanSelectorOptions.setAttribute('aria-labelledby', dropDownMenuIdentifier);
-    
+    dropDownPlanSelectorButton.setAttribute('type', 'button');    
+    dropDownPlanSelectorOptions.setAttribute('aria-labelledby', dropDownMenuIdentifier);    
+    dropDownPlanSelector.title = 'Select a plan in progress.';
     dropDownPlanSelector.appendChild(dropDownPlanSelectorButton);
     dropDownPlanSelector.appendChild(dropDownPlanSelectorOptions);
     
+    // TODO: Loop through draft plans -- faking for now.
     for(let i = 0; i < 10; i++){
         let option = this.addElement('a', 'Plan #' + (i+1), 'dropdown-item');
         option.context = this;
@@ -234,6 +213,11 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
             msgPlanWorkingOn.innerHTML = 'Now editing plan #' + (i+1) + '...';
             buttonAddNew.disabled = false;
             this.context.buttonPlanUpdate.disabled = false;
+            //dropDownPlanSelectorButton.innerHTML = 'Now editing ' + this.innerHTML;
+            //
+            // Refreshes the grid            
+            this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
+            this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());  
         }
         dropDownPlanSelectorOptions.appendChild(option);
     }
@@ -247,10 +231,15 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
         msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
         this.context.buttonPlanUpdate.disabled = true;
         this.disabled = true;
+        
+        // Refreshes the grid
+        this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
+        this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());  
     };
     
     this.buttonPlanUpdate = this.addInput('button', 'btn btn-primary float-right');
     this.buttonPlanUpdate.value = 'Set as Current Plan';
+    this.buttonPlanUpdate.title = 'Set this plan as the current factory plan.';
     this.buttonPlanUpdate.context = this;
     this.buttonPlanUpdate.disabled = true;
     this.buttonPlanUpdate.addEventListener('click', function(){
@@ -259,7 +248,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
         
         // Refreshes the grid
         this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
-        this.context.buildGrid(this.context.gridDiv, this.context.loadJson());        
+        this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());        
     });
 
     rootElement.appendChild(dropDownPlanSelector);
@@ -272,6 +261,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
 CutPlannerApp.prototype.loadHtml = function(widget_element_id){        
     
     RBT.jsonServerURL = 'http://192.168.0.240:8880/';
+    
     /* RBT.putGetJson('CutPlanner', {}, function(response){
         console.log(response);
     }, null);*/
@@ -286,14 +276,13 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
     
     // Build grid
     this.gridDiv = this.addDiv('grid-container');    
-    this.buildGrid(this.gridDiv, data);    
+    this.buildBucketGrid(this.gridDiv, data);    
     section.appendChild(this.gridDiv);
     
-    // Build action menu
-    //this.buildActionMenu(section);
-    
     // Build list view
-    this.buildListView(section, data);
+    this.listDiv = this.addDiv('list-container');
+    this.buildDemandGroupList(this.listDiv, data);
+    section.appendChild(this.listDiv);
     
     // Generate widget
     document.getElementById(widget_element_id).appendChild(section);
