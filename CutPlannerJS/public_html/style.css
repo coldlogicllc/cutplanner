@@ -99,6 +99,26 @@
     cursor: pointer;
 }
 
+/* Menu Container */
+
+.dropdown {
+    display: inline-block;
+}
+
+.menu-container {
+    margin: 3 15px;
+}
+
+.btn {
+    margin-left: 2px;
+}
+
+.msg-current-plan {
+    color: #444;
+    font-size: 16px;
+    margin-left: 10px;
+}
+
 /* Action Container */
 
 .action-container {
