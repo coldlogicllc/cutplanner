@@ -59,7 +59,7 @@
 }
 
 .input-date {
-    width: 100px;
+    width: 110px;
 }
 
 /* Grids */
@@ -194,6 +194,22 @@ span.manu-item {
 }
 
 /* RBT Table Fix */
+/*
 table, tbody, tr, td {
     display: block;
+}*/
+
+/* Group Table */
+.table {
+    display: table!important;
+}
+.table-header-group {
+    display: table-header-group !important;
+}
+.table-row {
+    display: table-row!important;
+}
+td.table-cell{
+    display: table-cell!important;
+    padding: 2px;
 }
