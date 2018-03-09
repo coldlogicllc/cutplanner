@@ -13,7 +13,7 @@ CutPlannerApp.prototype.addCell = function(element){
     cell.appendChild(element);
     
     return cell;
-}
+};
 
 CutPlannerApp.prototype.addDiv = function(class_name, text){
     var div = document.createElement('div');
@@ -59,7 +59,7 @@ CutPlannerApp.prototype.datesEqual = function(date1, date2){
 CutPlannerApp.prototype.formatDate = function(dateString){
   let date = new Date(dateString);  
   let today = new Date();
-  let tomorrow = new Date()
+  let tomorrow = new Date();
   let yesterday = new Date();
   let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   let day = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
@@ -89,7 +89,7 @@ CutPlannerApp.prototype.highlightOnChange = function(){
     }
     
     this.context.buttonAddNew.disabled = false;
-}
+};
 
 CutPlannerApp.prototype.buttonToggle = function(buttons, value){
     for(let i = 0; i < buttons.length; i++){
@@ -105,7 +105,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
     let dropDownPlanSelectorOptions = this.addDiv('dropdown-menu');
     let buttonPlanUpdate = this.addInput('button', 'btn btn-warning float-right');
     let buttonAddNew = this.addInput('button', 'btn btn-success');
-    let buttonRemove = this.addInput('button', 'btn btn-danger')
+    let buttonRemove = this.addInput('button', 'btn btn-danger');
     //let buttonTest = this.addInput('button', 'btn btn-warning');
     let msgPlanWorkingOn = this.addElement('span', '', 'msg-current-plan');
     
@@ -160,7 +160,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
         this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());  
     };
     
-    buttonRemove.value = "Delete"
+    buttonRemove.value = "Delete";
     buttonRemove.title = 'Remove a draft plan.';
     buttonRemove.disabled = true;
     buttonRemove.context = this;
@@ -954,5 +954,5 @@ CutPlannerApp.prototype.loadJson = function(){
                                 "type_color": "#47e735"
                         }]
                 }]
-        }]
+        }];
 };
