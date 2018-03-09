@@ -78,21 +78,26 @@
 
 .day-plan {
     float: left;
-    padding: 7px 9px;
-    border-right: 2px dashed #ddd;
+    padding: 0;
+    /*border-right: 2px dashed #ddd;*/
     min-width: 180px;
 }
 
-.day-plan h4 {
-    color: #444;
-    border-bottom: 2px solid #444;
+.day-title {
+    color: #fefefe;
     text-align: center;
+    font-size: 20px;
+    border-right: 2px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    background: #555;
+    padding: 5px;
 }
 
 .group-day-plan {
     border: 3px solid #dfdfdf;
     background: #efefef;
-    margin: 5px 0 0 0;
+    /*margin: 5px 0 0 0;*/
+    margin: 0px;
     font-size: 13px;
     overflow: hidden;
     padding: 0;
