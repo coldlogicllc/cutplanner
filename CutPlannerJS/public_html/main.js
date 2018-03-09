@@ -97,6 +97,16 @@ CutPlannerApp.prototype.buttonToggle = function(buttons, value){
     }
 };
 
+CutPlannerApp.prototype.refreshAll = function(context){
+    // Refreshes the grid
+    context.gridDiv.removeChild(context.gridDiv.firstChild);
+    context.buildBucketGrid(context.gridDiv, context.loadJson());  
+
+    // Refresh the list view
+    context.listDiv.removeChild(context.listDiv.firstChild);
+    context.buildGroupList(context.listDiv, context.loadJson());
+};
+
 CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
     let dropDownMenuIdentifier = 'dropdownMenuButton_' + Math.floor((Math.random() * 10000000000) + 1);
     let dropDownMenuText = 'Select a draft plan';
@@ -130,12 +140,11 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
             msgPlanWorkingOn.innerHTML = 'Now editing plan #' + (i+1) + '...';
             dropDownPlanSelectorButton.innerHTML = this.innerHTML;
 
-            // Handle buttons
+            // Toggle buttons
             this.context.buttonToggle([buttonAddNew, buttonRemove, buttonPlanUpdate], false);
 
             // Refreshes the grid            
-            this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
-            this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());  
+            this.context.refreshAll(this.context);
         };
         
         dropDownPlanSelectorOptions.appendChild(option);
@@ -150,14 +159,12 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
         console.log('Creating a new plan.');
         msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
         dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
-        buttonPlanUpdate.disabled = true;
-        buttonAddNew.disabled = true;
-        buttonRemove.disabled = true;
-        this.disabled = true;
+
+        // Toggle the buttons
+        this.context.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
         
-        // Refreshes the grid
-        this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
-        this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());  
+        // Refreshes the grid            
+        this.context.refreshAll(this.context);
     };
     
     buttonRemove.value = "Delete";
@@ -169,12 +176,18 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
             for(var i = 0; i < dropDownPlanSelectorOptions.childNodes.length; i++){
                 if(dropDownPlanSelectorOptions.childNodes[i].innerHTML === dropDownPlanSelectorButton.innerHTML){
                     dropDownPlanSelectorOptions.removeChild(dropDownPlanSelectorOptions.childNodes[i]);
+                    
+                    // Refresh menu
                     dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
-                    this.disabled = true;
-                    buttonAddNew.disabled = true;
                     msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
+
+                    // Toggle the buttons
+                    this.context.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
+                    
+                    // Refreshes the grid            
+                    this.context.refreshAll(this.context);
                 }
-            }
+            }                        
         }
     };
         
@@ -188,9 +201,8 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
             // TODO: Send JSON changes to server
             console.log('Grid should be refreshed here.');
 
-            // Refreshes the grid
-            this.context.gridDiv.removeChild(this.context.gridDiv.firstChild);
-            this.context.buildBucketGrid(this.context.gridDiv, this.context.loadJson());        
+            // Refreshes the grid            
+            this.context.refreshAll(this.context);      
         }
     });
 
@@ -209,13 +221,11 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement){
         // 3. Enable button set as current plan.
         // 4. Enable button delete
         // 5. Enable button new
-        buttonPlanUpdate.disabled = false;
-        buttonAddNew.disabled = false;
-        buttonRemove.disabled = false;
+        // Toggle the buttons
+        this.context.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], false);
         
         // 6. Refresh draft list and select current
-
-        
+        this.context.refreshAll(this.context);        
     };
     
     //buttonTest.value = 'A Test Button';
@@ -329,12 +339,13 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
             inputName.originalvalue = group.types;
             inputName.row = tableRow;
             inputName.onkeyup = this.highlightOnChange;
+            inputName.placeholder = 'Name...';
             
             inputColor.context = this;
             inputColor.value = group.type_color;
             inputColor.originalvalue = group.type_color;
             inputColor.row = tableRow;
-            inputColor.onchange = this.highlightOnChange;
+            inputColor.onchange = this.highlightOnChange;            
             
             inputDueDate.context = this;
             inputDueDate.value = group.earliest_due_date;
@@ -342,16 +353,19 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
             inputDueDate.row = tableRow;            
             inputDueDate.onkeyup = this.highlightOnChange;
             inputDueDate.style.backgroundColor = day.when_to_do.when_planned_done <= group.earliest_due_date ? '#ffffff' : '#f2dede';            
+            inputDueDate.placeholder = 'Date...';
             
             inputActualDate.context = this;
             inputActualDate.value = '';
             inputActualDate.row = tableRow;
             inputActualDate.onkeyup = this.highlightOnChange;
+            inputActualDate.placeholder = 'Date...';
             
             inputRequestedDate.context = this;
             inputRequestedDate.value = '';
             inputRequestedDate.row = tableRow;
             inputRequestedDate.onkeyup = this.highlightOnChange;
+            inputRequestedDate.placeholder = 'Date...';
             
             tableRow.appendChild(this.addElement('td', group.groupnbr, 'table-cell'));
             tableRow.appendChild(this.addElement('td', data[0].plan.plannbr, 'table-cell'));
