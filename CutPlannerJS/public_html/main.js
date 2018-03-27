@@ -100,7 +100,7 @@ CutPlannerApp.prototype.buttonToggle = function(buttons, value){
 };
 
 CutPlannerApp.prototype.refreshAll = function(context){
-    context.loadJson(function(data, 'json'){
+    context.loadJson(function(data){
         // Refreshes the grid
         context.gridDiv.removeChild(context.gridDiv.firstChild);
         context.buildBucketGrid(context.gridDiv, data);  
@@ -395,7 +395,7 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
         RBT.jsonServerURL = 'http://192.168.0.240:8880/';
     }
     
-    this.loadJson(function(data, 'json'){
+    this.loadJson(function(data){
         let section = document.createElement('section');
 
         // Build menu
@@ -419,5 +419,5 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
 };
 
 CutPlannerApp.prototype.loadJson = function(callback, action){
-    RBT.putGetJson('cutplanner', JSON.stringify({ id: "rbt_widget_CutPlanner", action: action }), callback, null);
+    RBT.putGetJson('cutplanner', JSON.stringify({ id: "rbt_widget_CutPlanner", action: "json" }), callback, null);
 };
