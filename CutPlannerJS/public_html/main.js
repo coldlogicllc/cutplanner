@@ -419,5 +419,5 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
 };
 
 CutPlannerApp.prototype.loadJson = function(callback){
-    RBT.putGetJson('cutplanner', { id: "rbt_widget_CutPlanner", action: "json" }, callback, null);
+    RBT.putGetJson('cutplanner', { content: { id: "rbt_widget_CutPlanner", action: "json" }}, callback, null);
 };
