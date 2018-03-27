@@ -2290,7 +2290,7 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
         url: RBT.jsonServerURL+"factory/svc/json_process.jsp?ajax=y&widget=" + name,
         contentType: 'text/plain',
         data: json,
-
+        crossDomain: true,
         success: function (result) {
             if (result.success) {
                 if (saveButtonElement) {
@@ -2312,8 +2312,8 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
                 saveButtonElement.innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
             }
         },
-        processData: false, //default=true
-        dataType: "jsonp"
+        processData: true, //default=true
+        dataType: "json"
     });
 };
 
