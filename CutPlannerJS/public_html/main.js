@@ -315,7 +315,7 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     tableHeadRow.appendChild(this.addElement('th', 'Plan #'));
     tableHeadRow.appendChild(this.addElement('th', 'Name'));
     tableHeadRow.appendChild(this.addElement('th', 'Color'));
-    tableHeadRow.appendChild(this.addElement('th', 'David told customer date'));
+    tableHeadRow.appendChild(this.addElement('th', 'Customer promised date'));
     tableHeadRow.appendChild(this.addElement('th', 'Factory completed date'));
     tableHeadRow.appendChild(this.addElement('th', 'Date requested by'));    
     tableHead.appendChild(tableHeadRow);
@@ -391,13 +391,13 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
 CutPlannerApp.prototype.loadHtml = function(widget_element_id){        
     var self = this;
     
-    if(RBT != null){
+    if(RBT !== null){
         RBT.jsonServerURL = 'http://192.168.0.240:8880/';
     }
     
     this.loadJson(function(data){
         let section = document.createElement('section');
-    
+
         // Build menu
         self.menuDiv = self.addDiv('menu-container');    
         self.buildPlanSelector(this.menuDiv, data);    
@@ -419,5 +419,5 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
 };
 
 CutPlannerApp.prototype.loadJson = function(callback){
-    RBT.putGetJson('widget_cutplanner', '{ "action": "json", "value": 0}', callback, null);
+    RBT.putGetJson('cutplanner', { action: "json", value: 0}, callback, null);
 };
