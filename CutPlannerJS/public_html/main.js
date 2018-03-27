@@ -400,7 +400,7 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
 
         // Build menu
         self.menuDiv = self.addDiv('menu-container');    
-        self.buildPlanSelector(this.menuDiv, data);    
+        self.buildPlanSelector(self.menuDiv, data);    
         section.appendChild(self.menuDiv);
 
         // Build grid
