@@ -2288,7 +2288,7 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
     $.ajax({
         method: "POST",
         url: RBT.jsonServerURL+"factory/svc/json_process.jsp?ajax=y&widget=" + name,
-        contentType: 'application/json',
+        contentType: 'text/plain',
         data: json,
 
         success: function (result) {
@@ -2312,7 +2312,7 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
                 saveButtonElement.innerHTML = '<i class="fa fa-exclamation-triangle"></i>';
             }
         },
-        processData: true, //default=true
+        processData: false, //default=true
         dataType: "jsonp"
     });
 };
