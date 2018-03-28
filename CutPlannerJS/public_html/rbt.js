@@ -2288,9 +2288,9 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
     $.ajax({
         method: "POST",
         url: RBT.jsonServerURL+"factory/svc/json_process.jsp?ajax=y&widget=" + name,
-        contentType: 'application/json',
+        contentType: 'text/plain',
         data: json,
-
+        crossDomain: true,
         success: function (result) {
             if (result.success) {
                 if (saveButtonElement) {
@@ -2298,14 +2298,15 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
                     //saveButtonElement.style.background = "white";
                     saveButtonElement.style = saveButtonElement.savedStyle;
                 }
-                // alert("saved");
+                if (result.message){
+                    alert(result.message);
+                }
                 console.log("success ", result);
                 receiver(result);
             } else
                 this.error(result.message);
         },
         error: function (result) {
-            alert("error " + result);
             console.log("error ", result);
             if (saveButtonElement) {
                 saveButtonElement.style.background = "red";
@@ -2313,7 +2314,7 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
             }
         },
         processData: true, //default=true
-        dataType: "jsonp"
+        dataType: "json"
     });
 };
 
