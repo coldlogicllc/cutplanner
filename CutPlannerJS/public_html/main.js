@@ -103,6 +103,7 @@ CutPlannerApp.prototype.highlightOnChange = function(){
         this.row.style.background = '#ffe160';
     }
     
+    this.row.style.background = '#ffe160'
     this.context.buttonAddNew.disabled = false;
 };
 
@@ -340,8 +341,8 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     let tableHeadRow = this.addElement('tr', '', 'table-row');
     let tableBody = this.addElement('tbody', '', 'table-body');    
     
-    tableHeadRow.appendChild(this.addElement('th', 'Group #'));
     tableHeadRow.appendChild(this.addElement('th', 'Plan #'));
+    tableHeadRow.appendChild(this.addElement('th', 'Group #'));    
     tableHeadRow.appendChild(this.addElement('th', 'Name'));
     tableHeadRow.appendChild(this.addElement('th', 'Color'));
     tableHeadRow.appendChild(this.addElement('th', 'Customer promised date'));
@@ -412,12 +413,14 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputName.row = tableRow;
         inputName.onkeyup = this.highlightOnChange;
         inputName.placeholder = 'Name...';
+        inputName.maxlength = 50;
 
         inputColor.context = this;
         inputColor.value = group.color;
         inputColor.originalvalue = group.color;
         inputColor.row = tableRow;
         inputColor.onchange = this.highlightOnChange;            
+        inputColor.maxlength = 7;
 
         inputDueDate.context = this;
         inputDueDate.value = group.earliest_due_date;
@@ -426,33 +429,48 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputDueDate.onkeyup = this.highlightOnChange;
         inputDueDate.style.backgroundColor = group.due_date <= group.earliest_due_date ? '#ffffff' : '#f2dede';            
         inputDueDate.placeholder = 'Date...';        
+        inputDueDate.setAttribute('maxlength', 10);
 
         inputRequestedDate.context = this;
         inputRequestedDate.value = group.due_date;
+        inputRequestedDate.originalvalue = group.due_date;
         inputRequestedDate.row = tableRow;
         inputRequestedDate.onkeyup = this.highlightOnChange;
         inputRequestedDate.placeholder = 'Target completion date...';
+        inputRequestedDate.title = 'Target completion date.';
+        inputRequestedDate.setAttribute('maxlength', 10);
         
         inputRequestedCutDate.context = this;
         inputRequestedCutDate.value = group.date_can_be_completed;
+        inputRequestedCutDate.originalvalue = group.date_can_be_completed;
         inputRequestedCutDate.row = tableRow;
         inputRequestedCutDate.onkeyup = this.highlightOnChange;
         inputRequestedCutDate.placeholder = 'Target cut date...';
+        inputRequestedCutDate.title = 'Target cut date.';
+        inputRequestedCutDate.setAttribute('maxlength', 10);
         
         inputActualDate.context = this;
         inputActualDate.value = group.date_completed;
+        inputActualDate.originalvalue = group.date_completed;
         inputActualDate.row = tableRow;
         inputActualDate.onkeyup = this.highlightOnChange;
         inputActualDate.placeholder = 'Actual completion date...';
+        inputActualDate.title = 'Actual completion date.';
+        inputActualDate.setAttribute('maxlength', 10);
+        inputActualDate.disabled = true;
         
         inputActualCutDate.context = this;
         inputActualCutDate.value = group.date_cut_by;
+        inputActualCutDate.originalvalue = group.date_cut_by;
         inputActualCutDate.row = tableRow;
         inputActualCutDate.onkeyup = this.highlightOnChange;
         inputActualCutDate.placeholder = 'Actual cut date...';
-
-        tableRow.appendChild(this.addElement('td', group.groupnbr, 'table-cell'));
+        inputActualCutDate.title = 'Actual cut date.';
+        inputActualCutDate.setAttribute('maxlength', 10);
+        inputActualCutDate.disabled = true;
+        
         tableRow.appendChild(this.addElement('td', group.plannbr, 'table-cell'));
+        tableRow.appendChild(this.addElement('td', group.groupnbr, 'table-cell'));
         tableRow.appendChild(this.addCell(inputName));
         tableRow.appendChild(this.addCell(inputColor));
         tableRow.appendChild(this.addCell(inputDueDate));
