@@ -99,8 +99,12 @@ CutPlannerApp.prototype.buttonToggle = function(buttons, value){
     }
 };
 
-CutPlannerApp.prototype.refreshAll = function(context){
+CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){
     context.loadJson(function(data){
+        // Refreshes the menu
+        context.menuDiv.removeChild(context.menuDiv.firstChild);
+        context.buildPlanSelector(context.menuDiv, data, plannbr);
+        
         // Refreshes the grid
         context.gridDiv.removeChild(context.gridDiv.firstChild);
         context.buildBucketGrid(context.gridDiv, data);  
@@ -108,14 +112,50 @@ CutPlannerApp.prototype.refreshAll = function(context){
         // Refresh the list view
         context.listDiv.removeChild(context.listDiv.firstChild);
         context.buildGroupList(context.listDiv, data);
-    });
+    }, plannbr, action, values);
+    
+};
+/*
+CutPlannerApp.prototype.refreshMenu = function(context, plannbr, action){
+    context.loadJson(function(data){
+        // Refreshes the menu
+        context.menuDiv.removeChild(context.menuDiv.firstChild);
+        context.buildPlanSelector(context.menuDiv, data);
+    }, plannbr, action);
+};
+
+CutPlannerApp.prototype.refreshBucketGrid = function(context, plannbr, action){
+    context.loadJson(function(data){        
+        // Refreshes the grid
+        context.gridDiv.removeChild(context.gridDiv.firstChild);
+        context.buildBucketGrid(context.gridDiv, data);  
+    }, plannbr, action);
     
 };
 
-CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data){
-    
-    //console.log(data.error);
-    
+CutPlannerApp.prototype.refreshGroupList = function(context, plannbr, action){
+    context.loadJson(function(data){        
+        // Refresh the list view
+        context.listDiv.removeChild(context.listDiv.firstChild);
+        context.buildGroupList(context.listDiv, data);
+    }, plannbr, action)  
+};*/
+
+CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, action, values) {
+    context.loadJson(function(data){        
+        // Refreshes the grid
+        context.gridDiv.removeChild(context.gridDiv.firstChild);
+        context.buildBucketGrid(context.gridDiv, data);  
+
+        // Refresh the list view
+        context.listDiv.removeChild(context.listDiv.firstChild);
+        context.buildGroupList(context.listDiv, data);
+    }, plannbr, action, values);
+};
+
+
+CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr){
+    let menuContainer = this.addDiv('menu-container');
     let dropDownMenuIdentifier = 'dropdownMenuButton_' + Math.floor((Math.random() * 10000000000) + 1);
     let dropDownMenuText = 'Select a draft plan';
     let dropDownPlanSelector = this.addDiv('dropdown');
@@ -124,8 +164,12 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data){
     let buttonPlanUpdate = this.addInput('button', 'btn btn-warning float-right');
     let buttonAddNew = this.addInput('button', 'btn btn-success');
     let buttonRemove = this.addInput('button', 'btn btn-danger');
-    //let buttonTest = this.addInput('button', 'btn btn-warning');
     let msgPlanWorkingOn = this.addElement('span', '', 'msg-current-plan');
+    let self = this;
+    let selected = typeof plannbr !== "undefined" ? plannbr : 0;
+    let selectedIsCurrent = false;
+    
+    rootElement.appendChild(menuContainer);
     
     msgPlanWorkingOn.innerHTML = 'Working on a new plan...';    
     dropDownPlanSelectorButton.id = dropDownMenuIdentifier;
@@ -139,22 +183,31 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data){
     dropDownPlanSelector.appendChild(dropDownPlanSelectorButton);
     dropDownPlanSelector.appendChild(dropDownPlanSelectorOptions);
     
-    // TODO: Loop through draft plans -- faking for now.
     for(let i = 0; i < data.plans.length; i++){
-        let option = this.addElement('a', data.plans[i].plan_name, 'dropdown-item');
-        option.context = this;        
+        let option = this.addElement('a', data.plans[i].plan_name + (data.plans[i].is_current_plan ? ' &#x2714;' : ''), 'dropdown-item');
+        //option.context = this;        
         option.onclick = function(){
-            console.log('You\'ve selected option: ' + data.plans[i].plan_name);
-            msgPlanWorkingOn.innerHTML = 'Now editing: ' + data.plans[i].plan_name + '...';
+            
+            // Set selected plan
+            selected = data.plans[i].plannbr;
+            selectedIsCurrent = data.plans[i].is_current_plan ? true : false;
+            
+            // Set message text
+            msgPlanWorkingOn.innerHTML = 'Now editing: ' + data.plans[i].plan_name + (selectedIsCurrent ? ' (Current)' : '') + '...';
             dropDownPlanSelectorButton.innerHTML = this.innerHTML;
 
             // Toggle buttons
-            this.context.buttonToggle([buttonAddNew, buttonRemove, buttonPlanUpdate], false);
+            self.buttonToggle([buttonRemove, buttonPlanUpdate], selectedIsCurrent);
+            self.buttonToggle([buttonAddNew], false);
 
             // Refreshes the grid            
-            this.context.refreshAll(this.context);
+            self.refreshBucketAndGroupList(self, selected, 'json');
         };
         
+        // If selected otherwise select current.
+        if(selected === data.plans[i].plannbr || (selected === 0 && data.plans[i].is_current_plan)){
+            option.click();
+        }
         dropDownPlanSelectorOptions.appendChild(option);
     }
         
@@ -162,94 +215,85 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data){
     buttonAddNew.value = 'New';
     buttonAddNew.title = 'Add a new plan.';
     buttonAddNew.disabled = true;
-    buttonAddNew.context = this;
     buttonAddNew.onclick = function(){
-        console.log('Creating a new plan.');
+        
+        // Set message text
         msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
         dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
 
         // Toggle the buttons
-        this.context.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
+        self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
         
         // Refreshes the grid            
-        this.context.refreshAll(this.context);
+        self.refreshAll(self, 0, 'new-plan');
     };
     
     buttonRemove.value = "Delete";
     buttonRemove.title = 'Remove a draft plan.';
     buttonRemove.disabled = true;
-    buttonRemove.context = this;
     buttonRemove.onclick = function(){
         if(confirm('Are you sure you want to remove this draft plan?')){
             for(var i = 0; i < dropDownPlanSelectorOptions.childNodes.length; i++){
                 if(dropDownPlanSelectorOptions.childNodes[i].innerHTML === dropDownPlanSelectorButton.innerHTML){
                     dropDownPlanSelectorOptions.removeChild(dropDownPlanSelectorOptions.childNodes[i]);
                     
-                    // Refresh menu
+                    // Set message text
                     dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
                     msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
 
                     // Toggle the buttons
-                    this.context.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
+                    self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
                     
                     // Refreshes the grid            
-                    this.context.refreshAll(this.context);
+                    self.refreshBucketAndGroupList(self, selected, 'remove-plan');
                 }
             }                        
         }
     };
         
-    
     buttonPlanUpdate.value = 'Set as Current Plan';
     buttonPlanUpdate.title = 'Set this plan as the current factory plan.';
-    buttonPlanUpdate.context = this;
     buttonPlanUpdate.disabled = true;
     buttonPlanUpdate.addEventListener('click', function(){
         if(confirm('Are you sure you want to replace the current plan with this one?')){
-            // TODO: Send JSON changes to server
-            console.log('Grid should be refreshed here.');
-
             // Refreshes the grid            
-            this.context.refreshAll(this.context);      
+            self.refreshAll(self, selected, 'set-current'); 
+            
+            // Disable remove since we don't want to delete current plan.
+            buttonRemove.disabled = true;
         }
     });
 
     this.buttonSaveListView = this.addInput('button', 'btn btn-primary float-right');        
     this.buttonSaveListView.value = 'Save Changes'; 
-    this.buttonSaveListView.context = this;
     this.buttonSaveListView.onclick = function(){
         // 1. Send JSON (from list). 
         // 2. Clear orange boxes.
-        for(let i = 0; i < this.context.rows.length; i++){
-            this.context.rows[i].row.style = '#fff';
-            
-            console.log(this.context.rows[i].inputName.value);
+        let changes = [];
+        for(let i = 0; i < self.rows.length; i++){
+            //self.rows[i].row.style = '#fff';
+            if(self.rows[i].changed()){
+                changes.push(self.rows[i].getJson());
+                console.log(self.rows[i].getJson());
+            }
         }
         
         // 3. Enable button set as current plan.
         // 4. Enable button delete
         // 5. Enable button new
         // Toggle the buttons
-        this.context.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], false);
+        self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], false);
         
         // 6. Refresh draft list and select current
-        this.context.refreshAll(this.context);        
+        self.refreshBucketAndGroupList(self, selected, 'save-plan', changes);        
     };
     
-    //buttonTest.value = 'A Test Button';
-    //buttonTest.title = 'A test button';
-    //buttonTest.onclick = function(){
-     //   alert(RBT.get_simple_return());
-    //};
-    
-    rootElement.appendChild(dropDownPlanSelector);
-    rootElement.appendChild(buttonAddNew);
-    rootElement.appendChild(buttonRemove);
-    //rootElement.appendChild(buttonTest);
-    rootElement.appendChild(msgPlanWorkingOn);
-    rootElement.appendChild(this.buttonSaveListView);
-    rootElement.appendChild(buttonPlanUpdate);
-    
+    menuContainer.appendChild(dropDownPlanSelector);
+    menuContainer.appendChild(buttonAddNew);
+    menuContainer.appendChild(buttonRemove);
+    menuContainer.appendChild(msgPlanWorkingOn);
+    menuContainer.appendChild(this.buttonSaveListView);
+    menuContainer.appendChild(buttonPlanUpdate); 
 };
 
 CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
@@ -289,7 +333,7 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 // Space hasn't been occupied yet.
                 if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < currentGroupDiv.group.manus)
                 {
-                    console.log(group.manu_detail[index].fabric_color);
+                    //console.log(group.manu_detail[index].fabric_color);
                     span.style.borderRightColor = group.manu_detail[index].fabric_color;
                     currentDayDiv.manuPosition++;
                     currentGroupDiv.manusInserted++;
@@ -323,6 +367,7 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     table.appendChild(tableBody);
     
     //let day = data[0].when_planned[dayCounter];   
+    this.rows = [];
     
     for(let groupCounter = 0; groupCounter < data.groups.length; groupCounter++)
     {
@@ -340,7 +385,21 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         }
 
         groups[group.groupnbr] = true;            
-        this.rows.push({ "inputName": inputName, "inputColor": inputColor, "inputDueDate": inputDueDate, "group": group, "row": tableRow });
+        this.rows.push({ 
+            "inputName": inputName, 
+            "inputColor": inputColor, 
+            "inputDueDate": inputDueDate, 
+            "group": group, 
+            "row": tableRow,
+            "changed" : function(){
+                return (this.inputName.value !== this.group.type 
+                    || this.inputColor.value !== this.group.color 
+                    || this.inputDueDate.value !== this.group.earliest_due_date);
+            },
+            getJson: function(){
+                return { name : this.inputName.value, color: this.inputColor.value, date: this.inputDueDate.value };
+            }
+        });
 
         inputName.context = this;
         inputName.value = group.type;
@@ -392,7 +451,7 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
     var self = this;
     
     if(RBT !== null){
-        RBT.jsonServerURL = 'http://192.168.0.240:8880/';
+        RBT.jsonServerURL = 'http://ds3.coldlogic.com:24089/';
     }
     
     this.loadJson(function(data){
@@ -415,9 +474,16 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
         
         // Generate widget
         document.getElementById(widget_element_id).appendChild(section);
-    });
+    }, 0, 'json');
 };
 
-CutPlannerApp.prototype.loadJson = function(callback){
-    RBT.putGetJson('cutplanner', JSON.stringify({ id: "rbt_widget_CutPlanner", action: "json" }), callback, null);
+CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
+    let post = { 
+        "id": "rbt_widget_CutPlanner", 
+        "action": action, 
+        "value": plannbr, 
+        "values": (typeof rows !== "undefined" ? rows : []) 
+    };
+    console.log(post);
+    RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
 };

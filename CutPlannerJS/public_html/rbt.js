@@ -2298,14 +2298,15 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
                     //saveButtonElement.style.background = "white";
                     saveButtonElement.style = saveButtonElement.savedStyle;
                 }
-                // alert("saved");
+                if (result.message){
+                    alert(result.message);
+                }
                 console.log("success ", result);
                 receiver(result);
             } else
                 this.error(result.message);
         },
         error: function (result) {
-            alert("error " + JSON.stringify(result));
             console.log("error ", result);
             if (saveButtonElement) {
                 saveButtonElement.style.background = "red";
