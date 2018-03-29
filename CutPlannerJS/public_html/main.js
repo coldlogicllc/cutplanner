@@ -15,6 +15,15 @@ CutPlannerApp.prototype.addCell = function(element){
     return cell;
 };
 
+CutPlannerApp.prototype.addCellArray = function(elements){
+    var cell = this.addElement('td', '', 'table-cell');
+    for(let i = 0; i < elements.length; i++){
+        cell.appendChild(elements[i]);
+    }
+        
+    return cell;
+};
+
 CutPlannerApp.prototype.addDiv = function(class_name, text){
     var div = document.createElement('div');
     div.setAttribute('class', class_name);   
@@ -50,25 +59,29 @@ CutPlannerApp.prototype.totalManusForDay = function(groups){
 };
 
 CutPlannerApp.prototype.datesEqual = function(date1, date2){
-    date1 = date1.getDate() + '/' + date1.getMonth() + '/' + date1.getYear();
-    date2 = date2.getDate() + '/' + date2.getMonth() + '/' + date2.getYear();
+    date1 = date1.getDate() + '/' + date1.getMonth() + '/' + date1.getFullYear();
+    date2 = date2.getDate() + '/' + (1+date2.getMonth()) + '/' + date2.getFullYear();    
     
     return date1 === date2;
 };
 
+CutPlannerApp.prototype.getDateFromString = function(str){
+   let parts = str.split('-');    
+   
+   return new Date(parts[0], parts[1], parts[2]);
+};
+
 CutPlannerApp.prototype.formatDate = function(dateString){
-  let date = new Date(dateString);
+  let date = this.getDateFromString(dateString);
   let today = new Date();
   let tomorrow = new Date();
   let yesterday = new Date();
   let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  let day = date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate()+1;
-  let month = date.getMonth()+1 < 10 ? '0' + (date.getMonth() +1) : (date.getMonth() + 1);
+  let day = date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate();
+  let month = date.getMonth()+1 < 10 ? '0' + (date.getMonth()) : (date.getMonth());
   
   tomorrow.setDate(today.getDate()+1);
   yesterday.setDate(today.getDate()-1);
-  
-  //console.log('Date: ' + date + ' Today: ' + today + ' Tomorrow: ' + tomorrow + ' Yesterday: ' + yesterday);
   
   if(this.datesEqual(date, today)) {
       return 'Today, ' + month + '/' + day;
@@ -99,7 +112,7 @@ CutPlannerApp.prototype.buttonToggle = function(buttons, value){
     }
 };
 
-CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){
+CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){    
     context.loadJson(function(data){
         // Refreshes the menu
         context.menuDiv.removeChild(context.menuDiv.firstChild);
@@ -112,34 +125,10 @@ CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){
         // Refresh the list view
         context.listDiv.removeChild(context.listDiv.firstChild);
         context.buildGroupList(context.listDiv, data);
+        
+        context.loadingDiv.style.display = 'none';
     }, plannbr, action, values);
-    
 };
-/*
-CutPlannerApp.prototype.refreshMenu = function(context, plannbr, action){
-    context.loadJson(function(data){
-        // Refreshes the menu
-        context.menuDiv.removeChild(context.menuDiv.firstChild);
-        context.buildPlanSelector(context.menuDiv, data);
-    }, plannbr, action);
-};
-
-CutPlannerApp.prototype.refreshBucketGrid = function(context, plannbr, action){
-    context.loadJson(function(data){        
-        // Refreshes the grid
-        context.gridDiv.removeChild(context.gridDiv.firstChild);
-        context.buildBucketGrid(context.gridDiv, data);  
-    }, plannbr, action);
-    
-};
-
-CutPlannerApp.prototype.refreshGroupList = function(context, plannbr, action){
-    context.loadJson(function(data){        
-        // Refresh the list view
-        context.listDiv.removeChild(context.listDiv.firstChild);
-        context.buildGroupList(context.listDiv, data);
-    }, plannbr, action)  
-};*/
 
 CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, action, values) {
     context.loadJson(function(data){        
@@ -150,9 +139,10 @@ CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, a
         // Refresh the list view
         context.listDiv.removeChild(context.listDiv.firstChild);
         context.buildGroupList(context.listDiv, data);
+        
+        context.loadingDiv.style.display = 'none';
     }, plannbr, action, values);
 };
-
 
 CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr){
     let menuContainer = this.addDiv('menu-container');
@@ -267,24 +257,20 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     this.buttonSaveListView = this.addInput('button', 'btn btn-primary float-right');        
     this.buttonSaveListView.value = 'Save Changes'; 
     this.buttonSaveListView.onclick = function(){
-        // 1. Send JSON (from list). 
-        // 2. Clear orange boxes.
+
         let changes = [];
         for(let i = 0; i < self.rows.length; i++){
             //self.rows[i].row.style = '#fff';
             if(self.rows[i].changed()){
                 changes.push(self.rows[i].getJson());
-                console.log(self.rows[i].getJson());
+                //console.log(self.rows[i].getJson());
             }
         }
-        
-        // 3. Enable button set as current plan.
-        // 4. Enable button delete
-        // 5. Enable button new
-        // Toggle the buttons
+
+        // Toggle buttons
         self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], false);
         
-        // 6. Refresh draft list and select current
+        // Refresh draft list and select current
         self.refreshBucketAndGroupList(self, selected, 'save-plan', changes);        
     };
     
@@ -333,7 +319,6 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 // Space hasn't been occupied yet.
                 if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < currentGroupDiv.group.manus)
                 {
-                    //console.log(group.manu_detail[index].fabric_color);
                     span.style.borderRightColor = group.manu_detail[index].fabric_color;
                     currentDayDiv.manuPosition++;
                     currentGroupDiv.manusInserted++;
@@ -360,8 +345,8 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     tableHeadRow.appendChild(this.addElement('th', 'Name'));
     tableHeadRow.appendChild(this.addElement('th', 'Color'));
     tableHeadRow.appendChild(this.addElement('th', 'Customer promised date'));
-    tableHeadRow.appendChild(this.addElement('th', 'Factory completed date'));
-    tableHeadRow.appendChild(this.addElement('th', 'Date requested by'));    
+    tableHeadRow.appendChild(this.addElement('th', 'Target completion/cut date')); 
+    tableHeadRow.appendChild(this.addElement('th', 'Actual completion/cut date'));       
     tableHead.appendChild(tableHeadRow);
     table.appendChild(tableHead);
     table.appendChild(tableBody);
@@ -375,9 +360,11 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         let tableRow = this.addElement('tr', '', 'table-row');
         let inputName = this.addInput('text', 'form-control input-name');                 
         let inputColor = this.addInput('color', 'input-color');                
-        let inputDueDate = this.addInput('text', 'form-control input-date');
-        let inputActualDate = this.addInput('text', 'form-control input-date');
-        let inputRequestedDate = this.addInput('text', 'form-control input-date');
+        let inputDueDate = this.addInput('text', 'form-control input-date'); /* promised date */        
+        let inputRequestedDate = this.addInput('text', 'form-control input-date date-stack'); /* Target completion */
+        let inputRequestedCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Target cut */
+        let inputActualDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual completion */
+        let inputActualCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual cut */
 
         if(groups[group.groupnbr] === true)
         {
@@ -388,16 +375,34 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         this.rows.push({ 
             "inputName": inputName, 
             "inputColor": inputColor, 
-            "inputDueDate": inputDueDate, 
+            "inputDueDate": inputDueDate,
+            "inputRequestedDate": inputRequestedDate,
+            "inputRequestedCutDate" : inputRequestedCutDate,
+            "inputActualDate" : inputActualDate,
+            "inputActualCutDate" : inputActualCutDate,
             "group": group, 
             "row": tableRow,
             "changed" : function(){
                 return (this.inputName.value !== this.group.type 
                     || this.inputColor.value !== this.group.color 
-                    || this.inputDueDate.value !== this.group.earliest_due_date);
+                    || this.inputDueDate.value !== this.group.earliest_due_date
+                    || this.inputRequestedDate.value !== this.group.due_date
+                    || this.inputRequestedCutDate.value !== this.group.date_can_be_completed
+                    || this.inputActualDate.value !== this.group.date_completed
+                    || this.inputActualCutDate.value !== this.group.date_cut_by);
             },
             getJson: function(){
-                return { name : this.inputName.value, color: this.inputColor.value, date: this.inputDueDate.value };
+                return { 
+                    plannbr: group.plannbr, 
+                    groupnbr: group.groupnbr, 
+                    name : this.inputName.value, 
+                    color: this.inputColor.value, 
+                    date: this.inputDueDate.value,
+                    requesteddate: this.inputRequestedDate.value,
+                    requestedcutdate: this.inputRequestedCutDate.value,
+                    actualdate: this.inputActualDate.value,
+                    actualcutdate: this.inputActualCutDate.value
+                };
             }
         });
 
@@ -420,27 +425,40 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputDueDate.row = tableRow;            
         inputDueDate.onkeyup = this.highlightOnChange;
         inputDueDate.style.backgroundColor = group.due_date <= group.earliest_due_date ? '#ffffff' : '#f2dede';            
-        inputDueDate.placeholder = 'Date...';
-
-        inputActualDate.context = this;
-        inputActualDate.value = '';
-        inputActualDate.row = tableRow;
-        inputActualDate.onkeyup = this.highlightOnChange;
-        inputActualDate.placeholder = 'Date...';
+        inputDueDate.placeholder = 'Date...';        
 
         inputRequestedDate.context = this;
-        inputRequestedDate.value = '';
+        inputRequestedDate.value = group.due_date;
         inputRequestedDate.row = tableRow;
         inputRequestedDate.onkeyup = this.highlightOnChange;
-        inputRequestedDate.placeholder = 'Date...';
+        inputRequestedDate.placeholder = 'Target completion date...';
+        
+        inputRequestedCutDate.context = this;
+        inputRequestedCutDate.value = group.date_can_be_completed;
+        inputRequestedCutDate.row = tableRow;
+        inputRequestedCutDate.onkeyup = this.highlightOnChange;
+        inputRequestedCutDate.placeholder = 'Target cut date...';
+        
+        inputActualDate.context = this;
+        inputActualDate.value = group.date_completed;
+        inputActualDate.row = tableRow;
+        inputActualDate.onkeyup = this.highlightOnChange;
+        inputActualDate.placeholder = 'Actual completion date...';
+        
+        inputActualCutDate.context = this;
+        inputActualCutDate.value = group.date_cut_by;
+        inputActualCutDate.row = tableRow;
+        inputActualCutDate.onkeyup = this.highlightOnChange;
+        inputActualCutDate.placeholder = 'Actual cut date...';
 
         tableRow.appendChild(this.addElement('td', group.groupnbr, 'table-cell'));
         tableRow.appendChild(this.addElement('td', group.plannbr, 'table-cell'));
         tableRow.appendChild(this.addCell(inputName));
         tableRow.appendChild(this.addCell(inputColor));
         tableRow.appendChild(this.addCell(inputDueDate));
-        tableRow.appendChild(this.addCell(inputActualDate));
-        tableRow.appendChild(this.addCell(inputRequestedDate));
+        tableRow.appendChild(this.addCellArray([inputRequestedDate, inputRequestedCutDate]));
+        tableRow.appendChild(this.addCellArray([inputActualDate, inputActualCutDate]));
+        
         tableBody.appendChild(tableRow);
     }
         
@@ -449,14 +467,20 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
 
 CutPlannerApp.prototype.loadHtml = function(widget_element_id){        
     var self = this;
+    let section = document.createElement('section');
+    
+    self.loadingDiv = self.addDiv('loading', 'Loading please wait...');
+    section.appendChild(self.loadingDiv);
+    
+    // Generate widget
+    document.getElementById(widget_element_id).appendChild(section);
     
     if(RBT !== null){
         RBT.jsonServerURL = 'http://ds3.coldlogic.com:24089/';
     }
     
     this.loadJson(function(data){
-        let section = document.createElement('section');
-
+                                
         // Build menu
         self.menuDiv = self.addDiv('menu-container');    
         self.buildPlanSelector(self.menuDiv, data);    
@@ -471,9 +495,8 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
         self.listDiv = self.addDiv('list-container');
         self.buildGroupList(self.listDiv, data);
         section.appendChild(self.listDiv);
-        
-        // Generate widget
-        document.getElementById(widget_element_id).appendChild(section);
+              
+        self.loadingDiv.style.display = 'none';
     }, 0, 'json');
 };
 
@@ -484,6 +507,7 @@ CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
         "value": plannbr, 
         "values": (typeof rows !== "undefined" ? rows : []) 
     };
-    console.log(post);
+    //console.log(post);
+    this.loadingDiv.style.display = '';
     RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
 };
