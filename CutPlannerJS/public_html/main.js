@@ -308,14 +308,14 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
 
         // Loop groups
         this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
-        console.log(this.totalManusByCurrentDay);
+        //console.log(this.totalManusByCurrentDay);
         for(let groupCounter = 0; groupCounter < data.days[dayCounter].plan.length; groupCounter++)
         {
             let group = data.days[dayCounter].plan[groupCounter];
             let currentGroupDiv = this.addDiv('group-day-plan');
             // TODO: replace below line of code "group.n * 10" with work units.
             currentGroupDiv.style.height = Math.round(100 * ((group.n * 20)  / (this.maxDailyWorkUnits + 150)), 0) + '%';
-            currentGroupDiv.style.backgroundColor = data.days[dayCounter].day <= this.groups[group.g].order_group_promised_date ? '#efefef' : '#f2dede';
+            //currentGroupDiv.style.backgroundColor = data.days[dayCounter].day <= this.groups[group.g].order_group_promised_date ? '#efefef' : '#f2dede';
             currentGroupDiv.style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
             currentGroupDiv.setAttribute('title', this.groups[group.g].order_group_name);
             currentGroupDiv.group = group;
@@ -327,9 +327,9 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 let span = this.addElement('span', '', 'manu-item');
 
                 // Space hasn't been occupied yet.
-                if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < currentGroupDiv.group.manus)
+                if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < group.n)
                 {
-                    span.style.borderRightColor = group.manu_detail[index].c;
+                    span.style.borderRightColor = group.c;
                     currentDayDiv.manuPosition++;
                     currentGroupDiv.manusInserted++;
                     index++;
