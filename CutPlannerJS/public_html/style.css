@@ -3,6 +3,27 @@
     margin: 15px;
 }
 
+/* Loading */
+.loading {
+    z-index: 999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    overflow: show;
+    height: 40px;
+    width: 200px;
+    background: #444;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px;
+}
+
 /* Detail */
 
 .detail-box {
@@ -60,6 +81,12 @@
 
 .input-date {
     width: 120px;
+}
+
+.date-stack {
+    width: 180px;
+    font-size: 14px;
+    padding: 0px;
 }
 
 /* Grids */
