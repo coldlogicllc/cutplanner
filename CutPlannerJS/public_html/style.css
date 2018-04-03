@@ -83,10 +83,20 @@
     width: 120px;
 }
 
+span.label {
+    
+    float: left;
+    width: 50px;
+}
+
 .date-stack {
     width: 180px;
     font-size: 14px;
-    padding: 0px;
+    padding: 0px;    
+    float: left;
+}
+div.clear {
+    clear: both;
 }
 
 /* Grids */
@@ -201,7 +211,7 @@
 span.manu-item {
     width: 0px;
     border-left: 1.3px solid transparent;
-    border-right: 2.4px solid transparent;
+    border-right: 1.5px solid transparent;
     height: 100%;
     display:block;
     float:left;

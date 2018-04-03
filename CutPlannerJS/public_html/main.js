@@ -179,13 +179,14 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     dropDownPlanSelector.appendChild(dropDownPlanSelectorOptions);
     
     for(let i = 0; i < data.plans.length; i++){
+        data.plans[i].is_current_plan = this.isCurrentPlan(data, data.plans[i]);
         let option = this.addElement('a', data.plans[i].plan_name + (data.plans[i].is_current_plan ? ' &#x2714;' : ''), 'dropdown-item');
         //option.context = this;        
         option.onclick = function(){
             
             // Set selected plan
             selected = data.plans[i].plannbr;
-            selectedIsCurrent = self.isCurrentPlan(data, data.plans[i]);
+            selectedIsCurrent = data.plans[i].is_current_plan;
             
             // Set message text
             msgPlanWorkingOn.innerHTML = 'Now editing: ' + data.plans[i].plan_name + (selectedIsCurrent ? ' (Current)' : '') + '...';
@@ -321,7 +322,7 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
             currentGroupDiv.style.height = Math.round(100 * ((group.n * 20)  / (this.maxDailyWorkUnits + 150)), 0) + '%';
             //currentGroupDiv.style.backgroundColor = data.days[dayCounter].day <= this.groups[group.g].order_group_promised_date ? '#efefef' : '#f2dede';
             currentGroupDiv.style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
-            currentGroupDiv.setAttribute('title', this.groups[group.g].order_group_name);
+            currentGroupDiv.setAttribute('title', this.groups[group.g].order_group_name + ': ' + group.n + ' manus');
             currentGroupDiv.group = group;
             currentGroupDiv.manusInserted = 0;  
             let index = 0;
@@ -358,9 +359,9 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     tableHeadRow.appendChild(this.addElement('th', 'Group #'));    
     tableHeadRow.appendChild(this.addElement('th', 'Name'));
     tableHeadRow.appendChild(this.addElement('th', 'Color'));
-    tableHeadRow.appendChild(this.addElement('th', 'Promised cut/completion date'));
-    tableHeadRow.appendChild(this.addElement('th', 'Target cut/completion date')); 
-    tableHeadRow.appendChild(this.addElement('th', 'Expected cut/completion date'));       
+    tableHeadRow.appendChild(this.addElement('th', 'Customer Promised'));
+    tableHeadRow.appendChild(this.addElement('th', 'Target Date')); 
+    tableHeadRow.appendChild(this.addElement('th', 'Expected Date'));       
     tableHead.appendChild(tableHeadRow);
     table.appendChild(tableHead);
     table.appendChild(tableBody);
@@ -405,13 +406,13 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
                     || this.inputPromiseCutDate.value !== this.group.order_group_promised_cut_date
                     || this.inputTargetDate.value !== this.group.plan_group_target_date
                     || this.inputTargetCutDate.value !== this.group.plan_group_target_cut_date
-                    || this.inputExpectedDate.value !== this.group.plan_group_expected_cut_date
+                    || this.inputExpectedDate.value !== this.group.plan_group_expected_date
                     || this.inputExpectedCutDate.value !== this.group.plan_group_expected_cut_date);
             },
             getJson: function(){
                 return { 
                     plannbr: group.plannbr, 
-                    groupnbr: group.groupnbr, 
+                    groupnbr: group.order_groupnbr, 
                     name : this.inputName.value, 
                     color: this.inputColor.value, 
                     promiseddate: this.inputPromiseDate.value,
@@ -444,7 +445,10 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputPromiseDate.originalvalue = group.order_group_promised_date;
         inputPromiseDate.row = tableRow;            
         inputPromiseDate.onkeyup = this.highlightOnChange;
-        //inputPromiseDate.style.backgroundColor = group.due_date <= group.order_group_promised_date ? '#ffffff' : '#f2dede';            
+        if(group.order_group_promised_date < group.plan_group_expected_date){
+            inputPromiseDate.style.backgroundColor =  '#f2dede';
+        }
+                    
         inputPromiseDate.placeholder = 'Customer promise date...';        
         inputPromiseDate.setAttribute('maxlength', 10);
         inputPromiseDate.style.fontWeight = 'bold';
@@ -464,6 +468,9 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputTargetDate.originalvalue = group.plan_group_target_date;
         inputTargetDate.row = tableRow;
         inputTargetDate.onkeyup = this.highlightOnChange;
+        if(group.plan_group_target_date < group.plan_group_expected_date){
+            inputTargetDate.style.backgroundColor =  '#f2dede';
+        }
         inputTargetDate.placeholder = 'Target completion date...';
         inputTargetDate.title = 'Target completion date.';
         inputTargetDate.setAttribute('maxlength', 10);
@@ -505,9 +512,33 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         tableRow.appendChild(this.addElement('td', group.order_groupnbr, 'table-cell'));
         tableRow.appendChild(this.addCell(inputName));
         tableRow.appendChild(this.addCell(inputColor));
-        tableRow.appendChild(this.addCellArray([inputPromiseCutDate, inputPromiseDate]));
-        tableRow.appendChild(this.addCellArray([inputTargetCutDate, inputTargetDate]));
-        tableRow.appendChild(this.addCellArray([inputExpectedCutDate, inputExpectedDate]));
+        
+        let pDiv = this.addDiv('clear');
+        let p2Div = this.addDiv('clear');
+        pDiv.appendChild(this.addElement('span', 'Cut: ', 'label'));
+        pDiv.appendChild(inputPromiseCutDate);
+        
+        p2Div.appendChild(this.addElement('span', 'Done: ', 'label'));
+        p2Div.appendChild(inputPromiseDate);        
+        tableRow.appendChild(this.addCellArray([pDiv,p2Div]));
+        
+        let tDiv = this.addDiv('clear');
+        let t2Div = this.addDiv('clear');
+        tDiv.appendChild(this.addElement('span', 'Cut: ', 'label'));
+        tDiv.appendChild(inputTargetCutDate);
+        
+        t2Div.appendChild(this.addElement('span', 'Done: ', 'label'));
+        t2Div.appendChild(inputTargetDate)        
+        tableRow.appendChild(this.addCellArray([tDiv, t2Div]));
+        
+        let eDiv = this.addDiv('clear');
+        let e2Div = this.addDiv('clear');
+        eDiv.appendChild(this.addElement('span', 'Cut: ', 'label'));
+        eDiv.appendChild(inputExpectedCutDate);
+        
+        e2Div.appendChild(this.addElement('span', 'Done: ', 'label'));
+        e2Div.appendChild(inputExpectedDate)    
+        tableRow.appendChild(this.addCellArray([eDiv, e2Div]));
         
         tableBody.appendChild(tableRow);
     }
@@ -557,7 +588,7 @@ CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
         "value": plannbr, 
         "values": (typeof rows !== "undefined" ? rows : []) 
     };
-    //console.log(post);
+    console.log(post);
     this.loadingDiv.style.display = '';
     RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
 };
