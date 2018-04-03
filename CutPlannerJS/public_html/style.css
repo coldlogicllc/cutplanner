@@ -209,9 +209,9 @@ div.clear {
 
 /* Manus */
 span.manu-item {
-    width: 0px;
-    border-left: 1.3px solid transparent;
-    border-right: 1.5px solid transparent;
+    width: 2px;
+    /*border-left: 1.3px solid transparent;
+    border-right: 1.5px solid transparent;*/
     height: 100%;
     display:block;
     float:left;

@@ -312,38 +312,57 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         currentPlanDiv.appendChild(currentDayDiv);
 
         // Loop groups
-        this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);        
+        this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
+        this.manuWidthForCurrentDay = parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
+        //console.log('Total manus for day: ' + this.totalManusByCurrentDay);
+        //console.log('Pixel width for a manu is : ' + this.manuWidthForCurrentDay)
+        let currentGroupDiv = []; // To hold matching groups
+        currentDayDiv.divGroups = [];
+        
+        // Add colored manus
         for(let groupCounter = 0; groupCounter < data.days[dayCounter].plan.length; groupCounter++)
         {
             let group = data.days[dayCounter].plan[groupCounter];
-            let currentGroupDiv = this.addDiv('group-day-plan');
             
-            // TODO: replace below line of code "group.n * 10" with work units.
-            currentGroupDiv.style.height = Math.round(100 * ((group.n * 20)  / (this.maxDailyWorkUnits + 150)), 0) + '%';
-            currentGroupDiv.style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
-            currentGroupDiv.setAttribute('title', this.groups[group.g].order_group_name + ': ' + group.n + ' manus');
-            currentGroupDiv.group = group;
-            currentGroupDiv.manusInserted = 0;  
-            let index = 0;
+            if(typeof currentGroupDiv[group.g] === "undefined"){
+                currentGroupDiv[group.g] = this.addDiv('group-day-plan');
+                currentGroupDiv[group.g].n = group.n;
+                currentDayDiv.appendChild(currentGroupDiv[group.g]);
+                currentDayDiv.divGroups.push(currentGroupDiv[group.g]);
+            }else{
+                currentGroupDiv[group.g].manusInserted = currentGroupDiv[group.g].n; 
+                currentGroupDiv[group.g].n += group.n;
+            }
+            
+            currentGroupDiv[group.g].style.height = Math.round(90 * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + '%';
+            currentGroupDiv[group.g].style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
+            currentGroupDiv[group.g].title = this.groups[group.g].order_group_name + ': ' + currentGroupDiv[group.g].n + ' manus';
+
             // Loop manus
-            for(let manuCounter = 0; manuCounter < this.totalManusByCurrentDay; manuCounter++)
+            for(let manuCounter = 0; manuCounter < group.n; manuCounter++)
             {
                 let span = this.addElement('span', '', 'manu-item');
-
-                // Space hasn't been occupied yet.
-                if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < group.n)
-                {
-                    span.style.borderRightColor = group.c;
-                    currentDayDiv.manuPosition++;
-                    currentGroupDiv.manusInserted++;
-                    index++;
-                }
-
-                currentGroupDiv.appendChild(span);
+                span.style.borderRightColor = group.c; /* backgroundColor */
+                span.style.borderRightWidth = this.manuWidthForCurrentDay-1 + 'px';
+                span.style.borderRightStyle = 'solid';
+                span.style.borderLeft = '1px solid transparent';
+                currentGroupDiv[group.g].appendChild(span);
+                currentDayDiv.manuPosition++;
             }
-
-            currentDayDiv.appendChild(currentGroupDiv);
-        }            
+        }
+        
+        // Add whitespace
+        let whiteSpace = 0;
+        for(let i = 0; i < currentDayDiv.divGroups.length; i++){ // Loops buckets.
+            
+            for(let j = 0; j < whiteSpace; j++){
+                let span = this.addElement('span', '', 'manu-item');
+                span.style.width = this.manuWidthForCurrentDay + 'px';
+                currentDayDiv.divGroups[i].insertBefore(span, currentDayDiv.divGroups[i].firstChild);
+            }
+            
+            whiteSpace += currentDayDiv.divGroups[i].n;
+        }
     }
 };
 
