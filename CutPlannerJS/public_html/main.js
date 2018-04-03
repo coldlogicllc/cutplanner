@@ -211,7 +211,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     this.buttonAddNew = buttonAddNew;
     buttonAddNew.value = 'New';
     buttonAddNew.title = 'Add a new plan.';
-    buttonAddNew.disabled = true;
+    buttonAddNew.disabled = false;
     buttonAddNew.onclick = function(){
         
         // Set message text
@@ -312,15 +312,14 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         currentPlanDiv.appendChild(currentDayDiv);
 
         // Loop groups
-        this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
-        //console.log(this.totalManusByCurrentDay);
+        this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);        
         for(let groupCounter = 0; groupCounter < data.days[dayCounter].plan.length; groupCounter++)
         {
             let group = data.days[dayCounter].plan[groupCounter];
             let currentGroupDiv = this.addDiv('group-day-plan');
+            
             // TODO: replace below line of code "group.n * 10" with work units.
             currentGroupDiv.style.height = Math.round(100 * ((group.n * 20)  / (this.maxDailyWorkUnits + 150)), 0) + '%';
-            //currentGroupDiv.style.backgroundColor = data.days[dayCounter].day <= this.groups[group.g].order_group_promised_date ? '#efefef' : '#f2dede';
             currentGroupDiv.style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
             currentGroupDiv.setAttribute('title', this.groups[group.g].order_group_name + ': ' + group.n + ' manus');
             currentGroupDiv.group = group;
