@@ -113,6 +113,10 @@ CutPlannerApp.prototype.buttonToggle = function(buttons, value){
     }
 };
 
+CutPlannerApp.prototype.isCurrentPlan = function(data, plan){
+    return data.current_plannbr === plan.plannbr;
+};
+
 CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){    
     context.loadJson(function(data){
         // Refreshes the menu
@@ -181,7 +185,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
             
             // Set selected plan
             selected = data.plans[i].plannbr;
-            selectedIsCurrent = data.plans[i].is_current_plan ? true : false;
+            selectedIsCurrent = self.isCurrentPlan(data, data.plans[i]);
             
             // Set message text
             msgPlanWorkingOn.innerHTML = 'Now editing: ' + data.plans[i].plan_name + (selectedIsCurrent ? ' (Current)' : '') + '...';
@@ -199,6 +203,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         if(selected === data.plans[i].plannbr || (selected === 0 && data.plans[i].is_current_plan)){
             option.click();
         }
+        
         dropDownPlanSelectorOptions.appendChild(option);
     }
         
