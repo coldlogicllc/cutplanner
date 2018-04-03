@@ -4,6 +4,7 @@ function CutPlannerApp(){
     this.maxDayHeight = 500;
     this.maxDailyWorkUnits = 1270;   
     this.rows = [];
+    this.groups = [];
     
     this.buttonAddNew = null;
 };
@@ -52,7 +53,7 @@ CutPlannerApp.prototype.totalManusForDay = function(groups){
     var totalmanus = 0;
     for(var i = 0; i < groups.length; i++)
     {
-        totalmanus += groups[i].manus;
+        totalmanus += groups[i].n;
     }
     
     return totalmanus;
@@ -103,7 +104,6 @@ CutPlannerApp.prototype.highlightOnChange = function(){
         this.row.style.background = '#ffe160';
     }
     
-    this.row.style.background = '#ffe160'
     this.context.buttonAddNew.disabled = false;
 };
 
@@ -292,6 +292,12 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
 
     let currentPlanDiv = this.addDiv('plan-container');       
     rootElement.appendChild(currentPlanDiv);
+    
+    this.groups = [];
+    for(let groupCounter = 0; groupCounter < data.groups.length; groupCounter++)
+    {
+        this.groups[data.groups[groupCounter].order_groupnbr] = data.groups[groupCounter];
+    }
 
     // Loop days
     for(let dayCounter = 0; dayCounter < data.days.length; dayCounter++)
@@ -305,15 +311,17 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         currentPlanDiv.appendChild(currentDayDiv);
 
         // Loop groups
-        this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].buckets);
-        for(let groupCounter = 0; groupCounter < data.days[dayCounter].buckets.length; groupCounter++)
+        this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
+        //console.log(this.totalManusByCurrentDay);
+        for(let groupCounter = 0; groupCounter < data.days[dayCounter].plan.length; groupCounter++)
         {
-            let group = data.days[dayCounter].buckets[groupCounter];
+            let group = data.days[dayCounter].plan[groupCounter];
             let currentGroupDiv = this.addDiv('group-day-plan');
-            currentGroupDiv.style.height = Math.round(100 * (group.work_units / (this.maxDailyWorkUnits + 150)), 0) + '%';
-            currentGroupDiv.style.backgroundColor = data.days[dayCounter].day <= group.due_date ? '#efefef' : '#f2dede';
-            currentGroupDiv.style.borderColor = group.color;
-            currentGroupDiv.setAttribute('title', group.type);
+            // TODO: replace below line of code "group.n * 10" with work units.
+            currentGroupDiv.style.height = Math.round(100 * ((group.n * 20)  / (this.maxDailyWorkUnits + 150)), 0) + '%';
+            //currentGroupDiv.style.backgroundColor = data.days[dayCounter].day <= this.groups[group.g].order_group_promised_date ? '#efefef' : '#f2dede';
+            currentGroupDiv.style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
+            currentGroupDiv.setAttribute('title', this.groups[group.g].order_group_name);
             currentGroupDiv.group = group;
             currentGroupDiv.manusInserted = 0;  
             let index = 0;
@@ -323,9 +331,9 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 let span = this.addElement('span', '', 'manu-item');
 
                 // Space hasn't been occupied yet.
-                if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < currentGroupDiv.group.manus)
+                if(currentDayDiv.manuPosition <= manuCounter && currentGroupDiv.manusInserted < group.n)
                 {
-                    span.style.borderRightColor = group.manu_detail[index].fabric_color;
+                    span.style.borderRightColor = group.c;
                     currentDayDiv.manuPosition++;
                     currentGroupDiv.manusInserted++;
                     index++;
@@ -350,9 +358,9 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     tableHeadRow.appendChild(this.addElement('th', 'Group #'));    
     tableHeadRow.appendChild(this.addElement('th', 'Name'));
     tableHeadRow.appendChild(this.addElement('th', 'Color'));
-    tableHeadRow.appendChild(this.addElement('th', 'Customer promised date'));
-    tableHeadRow.appendChild(this.addElement('th', 'Target completion/cut date')); 
-    tableHeadRow.appendChild(this.addElement('th', 'Actual completion/cut date'));       
+    tableHeadRow.appendChild(this.addElement('th', 'Promised cut/completion date'));
+    tableHeadRow.appendChild(this.addElement('th', 'Target cut/completion date')); 
+    tableHeadRow.appendChild(this.addElement('th', 'Expected cut/completion date'));       
     tableHead.appendChild(tableHeadRow);
     table.appendChild(tableHead);
     table.appendChild(tableBody);
@@ -366,36 +374,39 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         let tableRow = this.addElement('tr', '', 'table-row');
         let inputName = this.addInput('text', 'form-control input-name');                 
         let inputColor = this.addInput('color', 'input-color');                
-        let inputDueDate = this.addInput('text', 'form-control input-date'); /* promised date */        
-        let inputRequestedDate = this.addInput('text', 'form-control input-date date-stack'); /* Target completion */
-        let inputRequestedCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Target cut */
-        let inputActualDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual completion */
-        let inputActualCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual cut */
+        let inputPromiseDate = this.addInput('text', 'form-control input-date date-stack'); /* promised date */
+        let inputPromiseCutDate = this.addInput('text', 'form-control input-date date-stack'); /* promised cut date */
+        let inputTargetDate = this.addInput('text', 'form-control input-date date-stack'); /* Target completion */
+        let inputTargetCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Target cut */
+        let inputExpectedDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual completion */
+        let inputExpectedCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual cut */
 
-        if(groups[group.groupnbr] === true)
+        if(groups[group.order_groupnbr] === true)
         {
             continue;
         }
 
-        groups[group.groupnbr] = true;            
+        groups[group.order_groupnbr] = true;            
         this.rows.push({ 
             "inputName": inputName, 
             "inputColor": inputColor, 
-            "inputDueDate": inputDueDate,
-            "inputRequestedDate": inputRequestedDate,
-            "inputRequestedCutDate" : inputRequestedCutDate,
-            "inputActualDate" : inputActualDate,
-            "inputActualCutDate" : inputActualCutDate,
+            "inputPromiseDate": inputPromiseDate,
+            "inputPromiseCutDate": inputPromiseCutDate,
+            "inputTargetDate": inputTargetDate,
+            "inputTargetCutDate" : inputTargetCutDate,
+            "inputExpectedDate" : inputExpectedDate,
+            "inputExpectedCutDate" : inputExpectedCutDate,
             "group": group, 
             "row": tableRow,
             "changed" : function(){
-                return (this.inputName.value !== this.group.type 
-                    || this.inputColor.value !== this.group.color 
-                    || this.inputDueDate.value !== this.group.earliest_due_date
-                    || this.inputRequestedDate.value !== this.group.due_date
-                    || this.inputRequestedCutDate.value !== this.group.date_can_be_completed
-                    || this.inputActualDate.value !== this.group.date_completed
-                    || this.inputActualCutDate.value !== this.group.date_cut_by);
+                return (this.inputName.value !== this.group.order_group_name 
+                    || this.inputColor.value !== this.group.order_group_color 
+                    || this.inputPromiseDate.value !== this.group.order_group_promised_date
+                    || this.inputPromiseCutDate.value !== this.group.order_group_promised_cut_date
+                    || this.inputTargetDate.value !== this.group.plan_group_target_date
+                    || this.inputTargetCutDate.value !== this.group.plan_group_target_cut_date
+                    || this.inputExpectedDate.value !== this.group.plan_group_expected_cut_date
+                    || this.inputExpectedCutDate.value !== this.group.plan_group_expected_cut_date);
             },
             getJson: function(){
                 return { 
@@ -403,84 +414,100 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
                     groupnbr: group.groupnbr, 
                     name : this.inputName.value, 
                     color: this.inputColor.value, 
-                    date: this.inputDueDate.value,
-                    requesteddate: this.inputRequestedDate.value,
-                    requestedcutdate: this.inputRequestedCutDate.value,
-                    actualdate: this.inputActualDate.value,
-                    actualcutdate: this.inputActualCutDate.value
+                    promiseddate: this.inputPromiseDate.value,
+                    promisedcutdate: this.inputPromiseCutDate.value,
+                    targetdate: this.inputTargetDate.value,
+                    targetcutdate: this.inputTargetCutDate.value,
+                    expecteddate: this.inputExpectedDate.value,
+                    expectedcutdate: this.inputExpectedCutDate.value
                 };
             }
         });
 
         inputName.context = this;
-        inputName.value = group.type;
-        inputName.originalvalue = group.type;
+        inputName.value = group.order_group_name;
+        inputName.originalvalue = group.order_group_name;
         inputName.row = tableRow;
         inputName.onkeyup = this.highlightOnChange;
         inputName.placeholder = 'Name...';
         inputName.maxlength = 50;
 
         inputColor.context = this;
-        inputColor.value = group.color;
-        inputColor.originalvalue = group.color;
+        inputColor.value = group.order_group_color === 'white' ? '#ffffff' : group.order_group_color;
+        inputColor.originalvalue = group.order_group_color === 'white' ? '#ffffff' : group.order_group_color;
         inputColor.row = tableRow;
         inputColor.onchange = this.highlightOnChange;            
         inputColor.maxlength = 7;
 
-        inputDueDate.context = this;
-        inputDueDate.value = group.earliest_due_date;
-        inputDueDate.originalvalue = group.earliest_due_date;
-        inputDueDate.row = tableRow;            
-        inputDueDate.onkeyup = this.highlightOnChange;
-        inputDueDate.style.backgroundColor = group.due_date <= group.earliest_due_date ? '#ffffff' : '#f2dede';            
-        inputDueDate.placeholder = 'Date...';        
-        inputDueDate.setAttribute('maxlength', 10);
+        inputPromiseDate.context = this;
+        inputPromiseDate.value = group.order_group_promised_date;
+        inputPromiseDate.originalvalue = group.order_group_promised_date;
+        inputPromiseDate.row = tableRow;            
+        inputPromiseDate.onkeyup = this.highlightOnChange;
+        //inputPromiseDate.style.backgroundColor = group.due_date <= group.order_group_promised_date ? '#ffffff' : '#f2dede';            
+        inputPromiseDate.placeholder = 'Customer promise date...';        
+        inputPromiseDate.setAttribute('maxlength', 10);
+        inputPromiseDate.style.fontWeight = 'bold';
+        
+        inputPromiseCutDate.context = this;
+        inputPromiseCutDate.value = group.order_group_promised_cut_date;
+        inputPromiseCutDate.originalvalue = group.order_group_promised_cut_date;
+        inputPromiseCutDate.row = tableRow;            
+        inputPromiseCutDate.onkeyup = this.highlightOnChange;
+        inputPromiseCutDate.disabled = true;
+        //inputPromiseCutDate.style.backgroundColor = group.due_date <= group.order_group_promised_date ? '#ffffff' : '#f2dede';            
+        inputPromiseCutDate.placeholder = 'Customer promise cut date...';        
+        inputPromiseCutDate.setAttribute('maxlength', 10);
 
-        inputRequestedDate.context = this;
-        inputRequestedDate.value = group.due_date;
-        inputRequestedDate.originalvalue = group.due_date;
-        inputRequestedDate.row = tableRow;
-        inputRequestedDate.onkeyup = this.highlightOnChange;
-        inputRequestedDate.placeholder = 'Target completion date...';
-        inputRequestedDate.title = 'Target completion date.';
-        inputRequestedDate.setAttribute('maxlength', 10);
+        inputTargetDate.context = this;
+        inputTargetDate.value = group.plan_group_target_date;
+        inputTargetDate.originalvalue = group.plan_group_target_date;
+        inputTargetDate.row = tableRow;
+        inputTargetDate.onkeyup = this.highlightOnChange;
+        inputTargetDate.placeholder = 'Target completion date...';
+        inputTargetDate.title = 'Target completion date.';
+        inputTargetDate.setAttribute('maxlength', 10);
+        inputTargetDate.style.fontWeight = 'bold';
         
-        inputRequestedCutDate.context = this;
-        inputRequestedCutDate.value = group.date_can_be_completed;
-        inputRequestedCutDate.originalvalue = group.date_can_be_completed;
-        inputRequestedCutDate.row = tableRow;
-        inputRequestedCutDate.onkeyup = this.highlightOnChange;
-        inputRequestedCutDate.placeholder = 'Target cut date...';
-        inputRequestedCutDate.title = 'Target cut date.';
-        inputRequestedCutDate.setAttribute('maxlength', 10);
+        inputTargetCutDate.context = this;
+        inputTargetCutDate.value = group.plan_group_target_cut_date;
+        inputTargetCutDate.originalvalue = group.plan_group_target_cut_date;
+        inputTargetCutDate.row = tableRow;
+        inputTargetCutDate.onkeyup = this.highlightOnChange;
+        inputTargetCutDate.disabled = true;
+        inputTargetCutDate.placeholder = 'Target cut date...';
+        inputTargetCutDate.title = 'Target cut date.';
+        inputTargetCutDate.setAttribute('maxlength', 10);
         
-        inputActualDate.context = this;
-        inputActualDate.value = group.date_completed;
-        inputActualDate.originalvalue = group.date_completed;
-        inputActualDate.row = tableRow;
-        inputActualDate.onkeyup = this.highlightOnChange;
-        inputActualDate.placeholder = 'Actual completion date...';
-        inputActualDate.title = 'Actual completion date.';
-        inputActualDate.setAttribute('maxlength', 10);
-        inputActualDate.disabled = true;
+        inputExpectedDate.context = this;
+        inputExpectedDate.value = group.plan_group_expected_date;
+        inputExpectedDate.originalvalue = group.plan_group_expected_date;
+        inputExpectedDate.row = tableRow;
+        inputExpectedDate.onkeyup = this.highlightOnChange;
+        inputExpectedDate.placeholder = 'Actual completion date...';
+        inputExpectedDate.title = 'Actual completion date.';
+        inputExpectedDate.setAttribute('maxlength', 10);
+        inputExpectedDate.disabled = true;
+        inputExpectedDate.style.fontWeight = 'bold';
         
-        inputActualCutDate.context = this;
-        inputActualCutDate.value = group.date_cut_by;
-        inputActualCutDate.originalvalue = group.date_cut_by;
-        inputActualCutDate.row = tableRow;
-        inputActualCutDate.onkeyup = this.highlightOnChange;
-        inputActualCutDate.placeholder = 'Actual cut date...';
-        inputActualCutDate.title = 'Actual cut date.';
-        inputActualCutDate.setAttribute('maxlength', 10);
-        inputActualCutDate.disabled = true;
+        inputExpectedCutDate.context = this;
+        inputExpectedCutDate.value = group.plan_group_expected_cut_date;
+        inputExpectedCutDate.originalvalue = group.plan_group_expected_cut_date;
+        inputExpectedCutDate.row = tableRow;
+        inputExpectedCutDate.onkeyup = this.highlightOnChange;
+        inputExpectedCutDate.disabled = true;
+        inputExpectedCutDate.placeholder = 'Actual cut date...';
+        inputExpectedCutDate.title = 'Actual cut date.';
+        inputExpectedCutDate.setAttribute('maxlength', 10);
+        inputExpectedCutDate.disabled = true;
         
         tableRow.appendChild(this.addElement('td', group.plannbr, 'table-cell'));
-        tableRow.appendChild(this.addElement('td', group.groupnbr, 'table-cell'));
+        tableRow.appendChild(this.addElement('td', group.order_groupnbr, 'table-cell'));
         tableRow.appendChild(this.addCell(inputName));
         tableRow.appendChild(this.addCell(inputColor));
-        tableRow.appendChild(this.addCell(inputDueDate));
-        tableRow.appendChild(this.addCellArray([inputRequestedDate, inputRequestedCutDate]));
-        tableRow.appendChild(this.addCellArray([inputActualDate, inputActualCutDate]));
+        tableRow.appendChild(this.addCellArray([inputPromiseCutDate, inputPromiseDate]));
+        tableRow.appendChild(this.addCellArray([inputTargetCutDate, inputTargetDate]));
+        tableRow.appendChild(this.addCellArray([inputExpectedCutDate, inputExpectedDate]));
         
         tableBody.appendChild(tableRow);
     }
