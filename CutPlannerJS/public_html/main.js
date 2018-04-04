@@ -77,7 +77,7 @@ CutPlannerApp.prototype.subtractDaysFromDate = function(str, days){
     let parts = str.split('-');
     let date = new Date(parts[0], parts[1], parts[2]);
     date.setDate(date.getDate()-days);
-    let ret = date.getFullYear() + '-' + (date.getMonth() < 10 ? '0' + date.getMonth() : date.getMonth()) + '-' + date.getDate();
+    let ret = date.getFullYear() + '-' + (date.getMonth() < 10 ? '0' + date.getMonth() : date.getMonth()) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
     //console.log(ret);
     
     return ret;
@@ -128,6 +128,14 @@ CutPlannerApp.prototype.isCurrentPlan = function(data, plan){
     return data.current_plannbr === plan.plannbr;
 };
 
+CutPlannerApp.prototype.startLoading = function(context){
+    context.loadingDiv.style.display = '';
+};
+
+CutPlannerApp.prototype.doneLoading = function(context){
+    context.loadingDiv.style.display = 'none';
+};
+
 CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){    
     context.loadJson(function(data){
         
@@ -145,7 +153,7 @@ CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){
             context.buildGroupList(context.listDiv, data);
         }
         
-        context.loadingDiv.style.display = 'none';
+        context.doneLoading(context);
     }, plannbr, action, values);
 };
 
@@ -162,7 +170,7 @@ CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, a
             context.buildGroupList(context.listDiv, data);
         }
         
-        context.loadingDiv.style.display = 'none';
+        context.doneLoading(context);
     }, plannbr, action, values);
 };
 
@@ -700,7 +708,7 @@ CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
         "value": plannbr, 
         "values": (typeof rows !== "undefined" ? rows : []) 
     };
-    console.log(post);
-    this.loadingDiv.style.display = '';
+    //console.log(post);
+    this.startLoading(this);
     RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
 };
