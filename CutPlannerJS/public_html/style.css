@@ -83,6 +83,10 @@
     width: 120px;
 }
 
+.input-color {
+    height: 38px;
+}
+
 span.label {
     
     float: left;
@@ -262,4 +266,8 @@ table, tbody, tr, td {
 td.table-cell{
     display: table-cell!important;
     padding: 2px;
+}
+
+td.center {
+    text-align: center;
 }

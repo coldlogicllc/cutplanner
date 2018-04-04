@@ -5,6 +5,7 @@ function CutPlannerApp(){
     this.maxDailyWorkUnits = 1270;   
     this.rows = [];
     this.groups = [];
+    this.buckets = [];
     
     this.buttonAddNew = null;
 };
@@ -72,6 +73,16 @@ CutPlannerApp.prototype.getDateFromString = function(str){
    return new Date(parts[0], parts[1], parts[2]);
 };
 
+CutPlannerApp.prototype.subtractDaysFromDate = function(str, days){
+    let parts = str.split('-');
+    let date = new Date(parts[0], parts[1], parts[2]);
+    date.setDate(date.getDate()-days);
+    let ret = date.getFullYear() + '-' + (date.getMonth() < 10 ? '0' + date.getMonth() : date.getMonth()) + '-' + date.getDate();
+    //console.log(ret);
+    
+    return ret;
+};
+
 CutPlannerApp.prototype.formatDate = function(dateString){
   let date = this.getDateFromString(dateString);
   let today = new Date();
@@ -119,34 +130,75 @@ CutPlannerApp.prototype.isCurrentPlan = function(data, plan){
 
 CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){    
     context.loadJson(function(data){
-        // Refreshes the menu
-        context.menuDiv.removeChild(context.menuDiv.firstChild);
-        context.buildPlanSelector(context.menuDiv, data, plannbr);
         
-        // Refreshes the grid
-        context.gridDiv.removeChild(context.gridDiv.firstChild);
-        context.buildBucketGrid(context.gridDiv, data);  
+        if(action !== 'save-only') {
+            // Refreshes the menu
+            context.menuDiv.removeChild(context.menuDiv.firstChild);
+            context.buildPlanSelector(context.menuDiv, data, plannbr);
 
-        // Refresh the list view
-        context.listDiv.removeChild(context.listDiv.firstChild);
-        context.buildGroupList(context.listDiv, data);
+            // Refreshes the grid
+            context.gridDiv.removeChild(context.gridDiv.firstChild);
+            context.buildBucketGrid(context.gridDiv, data);  
+
+            // Refresh the list view
+            context.listDiv.removeChild(context.listDiv.firstChild);
+            context.buildGroupList(context.listDiv, data);
+        }
         
         context.loadingDiv.style.display = 'none';
     }, plannbr, action, values);
 };
 
 CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, action, values) {
-    context.loadJson(function(data){        
-        // Refreshes the grid
-        context.gridDiv.removeChild(context.gridDiv.firstChild);
-        context.buildBucketGrid(context.gridDiv, data);  
+    context.loadJson(function(data){  
+        
+        if(action !== 'save-only') {
+            // Refreshes the grid
+            context.gridDiv.removeChild(context.gridDiv.firstChild);
+            context.buildBucketGrid(context.gridDiv, data);  
 
-        // Refresh the list view
-        context.listDiv.removeChild(context.listDiv.firstChild);
-        context.buildGroupList(context.listDiv, data);
+            // Refresh the list view
+            context.listDiv.removeChild(context.listDiv.firstChild);
+            context.buildGroupList(context.listDiv, data);
+        }
         
         context.loadingDiv.style.display = 'none';
     }, plannbr, action, values);
+};
+
+CutPlannerApp.prototype.repaintGui = function(self){
+    // Update list view
+    for(let i = 0; i < self.rows.length; i++){
+
+        // Remove on change hightlight
+        self.rows[i].row.style.background = '#ffffff';
+
+        // Update border colors
+        if(self.rows[i].colorChanged() || self.rows[i].nameChanged()){
+            for(let j = 0; j < self.buckets[self.rows[i].group.order_groupnbr].length; j++){
+                // Handle color
+                self.buckets[self.rows[i].group.order_groupnbr][j].style.borderColor = 
+                        self.rows[i].inputColor.value;
+                
+                // Handle name
+                self.buckets[self.rows[i].group.order_groupnbr][j].title = 
+                        self.rows[i].inputName.value + ': ' + 
+                        self.buckets[self.rows[i].group.order_groupnbr][j].n + ' manus';
+            }
+        }
+        
+        // Update promiseCut date
+        if(self.rows[i].promiseDateChanged()){
+            // Change cut date
+            self.rows[i].inputPromiseCutDate.value = self.subtractDaysFromDate(self.rows[i].inputPromiseDate.value, 3);
+            // Set background to red
+            if(self.rows[i].inputPromiseDate.value < self.rows[i].inputExpectedDate.value){
+                self.rows[i].inputPromiseDate.style.backgroundColor =  '#ff6666';
+            }else{
+                self.rows[i].inputPromiseDate.style.backgroundColor =  '#ffffff';
+            }
+        }
+    }
 };
 
 CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr){
@@ -178,6 +230,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     dropDownPlanSelector.appendChild(dropDownPlanSelectorButton);
     dropDownPlanSelector.appendChild(dropDownPlanSelectorOptions);
     
+    // Plans drop down menu
     for(let i = 0; i < data.plans.length; i++){
         data.plans[i].is_current_plan = this.isCurrentPlan(data, data.plans[i]);
         let option = this.addElement('a', data.plans[i].plan_name + (data.plans[i].is_current_plan ? ' &#x2714;' : ''), 'dropdown-item');
@@ -208,6 +261,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         dropDownPlanSelectorOptions.appendChild(option);
     }
         
+    // Add new plan button
     this.buttonAddNew = buttonAddNew;
     buttonAddNew.value = 'New';
     buttonAddNew.title = 'Add a new plan.';
@@ -225,6 +279,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         self.refreshAll(self, 0, 'new-plan');
     };
     
+    // Remove plan button
     buttonRemove.value = "Delete";
     buttonRemove.title = 'Remove a draft plan.';
     buttonRemove.disabled = true;
@@ -242,12 +297,14 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
                     self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], true);
                     
                     // Refreshes the grid            
-                    self.refreshBucketAndGroupList(self, selected, 'remove-plan');
+                    //self.refreshBucketAndGroupList(self, selected, 'remove-plan');
+                    self.refreshAll(self, selected, 'remove-plan');
                 }
             }                        
         }
     };
         
+    // Set as current plan button
     buttonPlanUpdate.value = 'Set as Current Plan';
     buttonPlanUpdate.title = 'Set this plan as the current factory plan.';
     buttonPlanUpdate.disabled = true;
@@ -261,24 +318,34 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         }
     });
 
+    // Save button
     this.buttonSaveListView = this.addInput('button', 'btn btn-primary float-right');        
     this.buttonSaveListView.value = 'Save Changes'; 
     this.buttonSaveListView.onclick = function(){
 
         let changes = [];
+        let targetDateChanged = false;
         for(let i = 0; i < self.rows.length; i++){
-            //self.rows[i].row.style = '#fff';
+
+            if(self.rows[i].targetDateChanged()){
+                targetDateChanged = true;
+            }
+            
             if(self.rows[i].changed()){
                 changes.push(self.rows[i].getJson());
-                //console.log(self.rows[i].getJson());
             }
         }
-
+        
+        // Update GUI manually
+        if(!targetDateChanged){
+            self.repaintGui(self);
+        }
+        
         // Toggle buttons
         self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], false);
         
         // Refresh draft list and select current
-        self.refreshBucketAndGroupList(self, selected, 'save-plan', changes);        
+        self.refreshBucketAndGroupList(self, selected, targetDateChanged ? 'save-plan' : 'save-only', changes);        
     };
     
     menuContainer.appendChild(dropDownPlanSelector);
@@ -295,6 +362,8 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
     rootElement.appendChild(currentPlanDiv);
     
     this.groups = [];
+    this.buckets = [];
+    
     for(let groupCounter = 0; groupCounter < data.groups.length; groupCounter++)
     {
         this.groups[data.groups[groupCounter].order_groupnbr] = data.groups[groupCounter];
@@ -314,11 +383,10 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         // Loop groups
         this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
         this.manuWidthForCurrentDay = parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
-        //console.log('Total manus for day: ' + this.totalManusByCurrentDay);
-        //console.log('Pixel width for a manu is : ' + this.manuWidthForCurrentDay)
+
         let currentGroupDiv = []; // To hold matching groups
         currentDayDiv.divGroups = [];
-        
+       
         // Add colored manus
         for(let groupCounter = 0; groupCounter < data.days[dayCounter].plan.length; groupCounter++)
         {
@@ -329,6 +397,14 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 currentGroupDiv[group.g].n = group.n;
                 currentDayDiv.appendChild(currentGroupDiv[group.g]);
                 currentDayDiv.divGroups.push(currentGroupDiv[group.g]);
+                
+                // Used in repaint GUI
+                if(typeof this.buckets[group.g] === "undefined")
+                {
+                    this.buckets[group.g] = [];
+                }
+                
+                this.buckets[group.g].push(currentGroupDiv[group.g]);
             }else{
                 currentGroupDiv[group.g].manusInserted = currentGroupDiv[group.g].n; 
                 currentGroupDiv[group.g].n += group.n;
@@ -393,12 +469,12 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         let tableRow = this.addElement('tr', '', 'table-row');
         let inputName = this.addInput('text', 'form-control input-name');                 
         let inputColor = this.addInput('color', 'input-color');                
-        let inputPromiseDate = this.addInput('text', 'form-control input-date date-stack'); /* promised date */
-        let inputPromiseCutDate = this.addInput('text', 'form-control input-date date-stack'); /* promised cut date */
-        let inputTargetDate = this.addInput('text', 'form-control input-date date-stack'); /* Target completion */
-        let inputTargetCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Target cut */
-        let inputExpectedDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual completion */
-        let inputExpectedCutDate = this.addInput('text', 'form-control input-date date-stack'); /* Actual cut */
+        let inputPromiseDate = this.addInput('date', 'form-control input-date date-stack'); /* promised date */
+        let inputPromiseCutDate = this.addInput('date', 'form-control input-date date-stack'); /* promised cut date */
+        let inputTargetDate = this.addInput('date', 'form-control input-date date-stack'); /* Target completion */
+        let inputTargetCutDate = this.addInput('date', 'form-control input-date date-stack'); /* Target cut */
+        let inputExpectedDate = this.addInput('date', 'form-control input-date date-stack'); /* Actual completion */
+        let inputExpectedCutDate = this.addInput('date', 'form-control input-date date-stack'); /* Actual cut */
 
         if(groups[group.order_groupnbr] === true)
         {
@@ -427,6 +503,18 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
                     || this.inputExpectedDate.value !== this.group.plan_group_expected_date
                     || this.inputExpectedCutDate.value !== this.group.plan_group_expected_cut_date);
             },
+            "targetDateChanged" : function(){
+                return this.inputTargetDate.value !== this.group.plan_group_target_date;
+            },
+            "promiseDateChanged" : function(){
+                return this.inputPromiseDate.value !== this.group.order_group_promised_date;
+            },
+            "colorChanged" : function(){
+                return this.inputColor.value !== this.group.order_group_color;
+            },
+            "nameChanged" : function(){
+                return this.inputName.value !== this.group.order_group_name;
+            },
             getJson: function(){
                 return { 
                     plannbr: group.plannbr, 
@@ -450,6 +538,8 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputName.onkeyup = this.highlightOnChange;
         inputName.placeholder = 'Name...';
         inputName.maxlength = 50;
+        inputName.style.border = '1px solid #333';
+        inputName.style.color = '#000000';
 
         inputColor.context = this;
         inputColor.value = group.order_group_color === 'white' ? '#ffffff' : group.order_group_color;
@@ -457,25 +547,27 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputColor.row = tableRow;
         inputColor.onchange = this.highlightOnChange;            
         inputColor.maxlength = 7;
+        inputColor.style.border = '1px solid #333';
 
         inputPromiseDate.context = this;
         inputPromiseDate.value = group.order_group_promised_date;
         inputPromiseDate.originalvalue = group.order_group_promised_date;
         inputPromiseDate.row = tableRow;            
-        inputPromiseDate.onkeyup = this.highlightOnChange;
+        inputPromiseDate.onchange = this.highlightOnChange;
         if(group.order_group_promised_date < group.plan_group_expected_date){
-            inputPromiseDate.style.backgroundColor =  '#f2dede';
-        }
-                    
+            inputPromiseDate.style.backgroundColor =  '#ff6666';
+        }                    
         inputPromiseDate.placeholder = 'Customer promise date...';        
         inputPromiseDate.setAttribute('maxlength', 10);
         inputPromiseDate.style.fontWeight = 'bold';
+        inputPromiseDate.style.border = '1px solid #333';
+        inputPromiseDate.style.color = '#000000';
         
         inputPromiseCutDate.context = this;
         inputPromiseCutDate.value = group.order_group_promised_cut_date;
         inputPromiseCutDate.originalvalue = group.order_group_promised_cut_date;
         inputPromiseCutDate.row = tableRow;            
-        inputPromiseCutDate.onkeyup = this.highlightOnChange;
+        inputPromiseCutDate.onchange = this.highlightOnChange;
         inputPromiseCutDate.disabled = true;
         //inputPromiseCutDate.style.backgroundColor = group.due_date <= group.order_group_promised_date ? '#ffffff' : '#f2dede';            
         inputPromiseCutDate.placeholder = 'Customer promise cut date...';        
@@ -485,20 +577,22 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputTargetDate.value = group.plan_group_target_date;
         inputTargetDate.originalvalue = group.plan_group_target_date;
         inputTargetDate.row = tableRow;
-        inputTargetDate.onkeyup = this.highlightOnChange;
+        inputTargetDate.onchange = this.highlightOnChange;
         if(group.plan_group_target_date < group.plan_group_expected_date){
-            inputTargetDate.style.backgroundColor =  '#f2dede';
+            inputTargetDate.style.backgroundColor =  '#ff6666';
         }
         inputTargetDate.placeholder = 'Target completion date...';
         inputTargetDate.title = 'Target completion date.';
         inputTargetDate.setAttribute('maxlength', 10);
         inputTargetDate.style.fontWeight = 'bold';
+        inputTargetDate.style.border = '1px solid #333';
+        inputTargetDate.style.color = '#000000';
         
         inputTargetCutDate.context = this;
         inputTargetCutDate.value = group.plan_group_target_cut_date;
         inputTargetCutDate.originalvalue = group.plan_group_target_cut_date;
         inputTargetCutDate.row = tableRow;
-        inputTargetCutDate.onkeyup = this.highlightOnChange;
+        inputTargetCutDate.onchange = this.highlightOnChange;
         inputTargetCutDate.disabled = true;
         inputTargetCutDate.placeholder = 'Target cut date...';
         inputTargetCutDate.title = 'Target cut date.';
@@ -508,7 +602,7 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputExpectedDate.value = group.plan_group_expected_date;
         inputExpectedDate.originalvalue = group.plan_group_expected_date;
         inputExpectedDate.row = tableRow;
-        inputExpectedDate.onkeyup = this.highlightOnChange;
+        inputExpectedDate.onchange = this.highlightOnChange;
         inputExpectedDate.placeholder = 'Actual completion date...';
         inputExpectedDate.title = 'Actual completion date.';
         inputExpectedDate.setAttribute('maxlength', 10);
@@ -519,15 +613,15 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputExpectedCutDate.value = group.plan_group_expected_cut_date;
         inputExpectedCutDate.originalvalue = group.plan_group_expected_cut_date;
         inputExpectedCutDate.row = tableRow;
-        inputExpectedCutDate.onkeyup = this.highlightOnChange;
+        inputExpectedCutDate.onchange = this.highlightOnChange;
         inputExpectedCutDate.disabled = true;
         inputExpectedCutDate.placeholder = 'Actual cut date...';
         inputExpectedCutDate.title = 'Actual cut date.';
         inputExpectedCutDate.setAttribute('maxlength', 10);
         inputExpectedCutDate.disabled = true;
         
-        tableRow.appendChild(this.addElement('td', group.plannbr, 'table-cell'));
-        tableRow.appendChild(this.addElement('td', group.order_groupnbr, 'table-cell'));
+        tableRow.appendChild(this.addElement('td', group.plannbr, 'table-cell center'));
+        tableRow.appendChild(this.addElement('td', group.order_groupnbr, 'table-cell center'));
         tableRow.appendChild(this.addCell(inputName));
         tableRow.appendChild(this.addCell(inputColor));
         
