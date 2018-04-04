@@ -6,7 +6,7 @@ function CutPlannerApp(){
     this.rows = [];
     this.groups = [];
     this.buckets = [];
-    
+    this.selected = 0;
     this.buttonAddNew = null;
 };
 
@@ -110,12 +110,12 @@ CutPlannerApp.prototype.formatDate = function(dateString){
   return daysOfWeek[date.getDay()] + ', ' + month + '/' + day; 
 };
 
-CutPlannerApp.prototype.highlightOnChange = function(){
-    if(this.value !== this.originalvalue){
-        this.row.style.background = '#ffe160';
+CutPlannerApp.prototype.highlightOnChange = function(context){
+    if(context.value !== context.originalvalue){
+        context.row.style.background = '#ffe160';
     }
     
-    this.context.buttonAddNew.disabled = false;
+    //context.buttonAddNew.disabled = false;
 };
 
 CutPlannerApp.prototype.buttonToggle = function(buttons, value){
@@ -175,6 +175,9 @@ CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, a
 };
 
 CutPlannerApp.prototype.repaintGui = function(self){
+    
+    let changes = [];
+    
     // Update list view
     for(let i = 0; i < self.rows.length; i++){
 
@@ -206,7 +209,15 @@ CutPlannerApp.prototype.repaintGui = function(self){
                 self.rows[i].inputPromiseDate.style.backgroundColor =  '#ffffff';
             }
         }
+        
+        // Collect list of changes
+        if(self.rows[i].nameChanged() || self.rows[i].colorChanged() || self.rows[i].promiseDateChanged()){
+            changes.push(self.rows[i].getJson());
+        }
     }
+    
+    // Refresh draft list and select current
+    self.refreshBucketAndGroupList(self, self.selected, 'save-only', changes);  
 };
 
 CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr){
@@ -221,7 +232,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     let buttonRemove = this.addInput('button', 'btn btn-danger');
     let msgPlanWorkingOn = this.addElement('span', '', 'msg-current-plan');
     let self = this;
-    let selected = typeof plannbr !== "undefined" ? plannbr : 0;
+    this.selected = typeof plannbr !== "undefined" ? plannbr : 0;
     let selectedIsCurrent = false;
     
     rootElement.appendChild(menuContainer);
@@ -246,7 +257,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         option.onclick = function(){
             
             // Set selected plan
-            selected = data.plans[i].plannbr;
+            self.selected = data.plans[i].plannbr;
             selectedIsCurrent = data.plans[i].is_current_plan;
             
             // Set message text
@@ -258,11 +269,11 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
             self.buttonToggle([buttonAddNew], false);
 
             // Refreshes the grid            
-            self.refreshBucketAndGroupList(self, selected, 'json');
+            self.refreshBucketAndGroupList(self, self.selected, 'json');
         };
         
         // If selected otherwise select current.
-        if(selected === data.plans[i].plannbr || (selected === 0 && data.plans[i].is_current_plan)){
+        if(self.selected === data.plans[i].plannbr || (self.selected === 0 && data.plans[i].is_current_plan)){
             option.click();
         }
         
@@ -306,7 +317,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
                     
                     // Refreshes the grid            
                     //self.refreshBucketAndGroupList(self, selected, 'remove-plan');
-                    self.refreshAll(self, selected, 'remove-plan');
+                    self.refreshAll(self, self.selected, 'remove-plan');
                 }
             }                        
         }
@@ -319,25 +330,34 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     buttonPlanUpdate.addEventListener('click', function(){
         if(confirm('Are you sure you want to replace the current plan with this one?')){
             // Refreshes the grid            
-            self.refreshAll(self, selected, 'set-current'); 
+            self.refreshAll(self, self.selected, 'set-current'); 
             
             // Disable remove since we don't want to delete current plan.
             buttonRemove.disabled = true;
         }
     });
+    
+    // Reset button
+    this.buttonReset = this.addInput('button', 'btn float-right');
+    this.buttonReset.value = 'Reset';
+    this.buttonReset.disabled = true;
+    this.buttonReset.onclick = function(){
+        self.refreshAll(self, self.selected, 'json');
+    };
 
     // Save button
-    this.buttonSaveListView = this.addInput('button', 'btn btn-primary float-right');        
-    this.buttonSaveListView.value = 'Save Changes'; 
+    this.buttonSaveListView = this.addInput('button', 'btn float-right');        
+    this.buttonSaveListView.value = 'Compute New Schedule';
+    this.buttonSaveListView.disabled = true;
     this.buttonSaveListView.onclick = function(){
 
         let changes = [];
-        let targetDateChanged = false;
+        //let targetDateChanged = false;
         for(let i = 0; i < self.rows.length; i++){
 
-            if(self.rows[i].targetDateChanged()){
-                targetDateChanged = true;
-            }
+            //if(self.rows[i].targetDateChanged()){
+            //    targetDateChanged = true;
+            //}
             
             if(self.rows[i].changed()){
                 changes.push(self.rows[i].getJson());
@@ -345,15 +365,18 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         }
         
         // Update GUI manually
-        if(!targetDateChanged){
-            self.repaintGui(self);
-        }
+        //if(!targetDateChanged){
+        //    self.repaintGui(self);
+        //}
         
         // Toggle buttons
         self.buttonToggle([buttonPlanUpdate, buttonAddNew, buttonRemove], false);
         
         // Refresh draft list and select current
-        self.refreshBucketAndGroupList(self, selected, targetDateChanged ? 'save-plan' : 'save-only', changes);        
+        self.refreshBucketAndGroupList(self, self.selected, 'save-plan', changes);        
+        
+        this.disabled = true;
+        this.className = 'btn float-right';
     };
     
     menuContainer.appendChild(dropDownPlanSelector);
@@ -361,6 +384,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     menuContainer.appendChild(buttonRemove);
     menuContainer.appendChild(msgPlanWorkingOn);
     menuContainer.appendChild(this.buttonSaveListView);
+    menuContainer.appendChild(this.buttonReset);
     menuContainer.appendChild(buttonPlanUpdate); 
 };
 
@@ -451,6 +475,7 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
 };
 
 CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
+    let self = this;
     let groups = [];
     let table = this.addElement('table', '', 'table');
     let tableHead = this.addElement('thead', '', 'table-header-group');
@@ -543,7 +568,10 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputName.value = group.order_group_name;
         inputName.originalvalue = group.order_group_name;
         inputName.row = tableRow;
-        inputName.onkeyup = this.highlightOnChange;
+        inputName.onkeyup = function(){
+            self.highlightOnChange(this);
+            self.repaintGui(self);
+        };
         inputName.placeholder = 'Name...';
         inputName.maxlength = 50;
         inputName.style.border = '1px solid #333';
@@ -553,7 +581,10 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputColor.value = group.order_group_color === 'white' ? '#ffffff' : group.order_group_color;
         inputColor.originalvalue = group.order_group_color === 'white' ? '#ffffff' : group.order_group_color;
         inputColor.row = tableRow;
-        inputColor.onchange = this.highlightOnChange;            
+        inputColor.onchange = function(){
+            self.highlightOnChange(this);
+            self.repaintGui(self);
+        };            
         inputColor.maxlength = 7;
         inputColor.style.border = '1px solid #333';
 
@@ -561,7 +592,10 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputPromiseDate.value = group.order_group_promised_date;
         inputPromiseDate.originalvalue = group.order_group_promised_date;
         inputPromiseDate.row = tableRow;            
-        inputPromiseDate.onchange = this.highlightOnChange;
+        inputPromiseDate.onchange = function(){
+            self.highlightOnChange(this);
+            self.repaintGui(self);
+        };
         if(group.order_group_promised_date < group.plan_group_expected_date){
             inputPromiseDate.style.backgroundColor =  '#ff6666';
         }                    
@@ -585,7 +619,22 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
         inputTargetDate.value = group.plan_group_target_date;
         inputTargetDate.originalvalue = group.plan_group_target_date;
         inputTargetDate.row = tableRow;
-        inputTargetDate.onchange = this.highlightOnChange;
+        inputTargetDate.onchange = function(){
+            
+            let changed = false;
+            for(let i = 0; i < self.rows.length; i++){
+                if(self.rows[i].targetDateChanged())
+                {
+                    changed = true;
+                }
+            }
+            
+            self.buttonSaveListView.disabled = !changed;
+            self.buttonSaveListView.className = changed ? 'btn btn-primary float-right' : 'btn float-right';
+            
+            self.buttonReset.disabled = !changed;
+            self.buttonReset.className = changed ? 'btn btn-secondary float-right' : 'btn float-right';
+        };
         if(group.plan_group_target_date < group.plan_group_expected_date){
             inputTargetDate.style.backgroundColor =  '#ff6666';
         }
