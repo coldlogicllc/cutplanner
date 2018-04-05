@@ -2298,7 +2298,7 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
                     //saveButtonElement.style.background = "white";
                     saveButtonElement.style = saveButtonElement.savedStyle;
                 }
-                if (result.message){
+                if (false && result.message){
                     alert(result.message);
                 }
                 console.log("success ", result);
