@@ -98,7 +98,7 @@ CutPlannerApp.prototype.formatDate = function(dateString){
   let today = new Date();
   let tomorrow = new Date();
   let yesterday = new Date();
-  let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  let daysOfWeek = ["Fri","Sat","Sun", "Mon", "Tue", "Wed", "Thu"];
   let day = date.getDate() < 10 ? ('0' + date.getDate()) : date.getDate();
   let month = date.getMonth()+1 < 10 ? '0' + (date.getMonth()) : (date.getMonth());
   
@@ -444,8 +444,9 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         let reservedAmount = this.getReservedAmount(data, data.days[dayCounter].day);
         let computedAmount = reservedAmount === 0 ? 0 : reservedAmount / 20;
         reservedGroup.style.height = computedAmount + '%';
-        reservedGroup.title = 'Pseudo manus: ' + reservedAmount + ' manus';
+        reservedGroup.title = 'On demand orders: ' + reservedAmount + ' work units';
         reservedGroup.style.borderColor = this.reservedGroupColor;
+        reservedGroup.style.borderStyle = 'dashed';
         currentDayDiv.appendChild(reservedGroup);
 
         // Loop groups
