@@ -142,6 +142,8 @@ CutPlannerApp.prototype.onTargetDateChange = function(self, element){
             break;
         }
     }
+    
+    self.buttonPlanUpdate.disabled = self.userHasUnsavedChanges;
 
     self.buttonSaveListView.disabled = !self.userHasUnsavedChanges;
     self.buttonSaveListView.className = self.userHasUnsavedChanges ? 'btn btn-primary float-right' : 'btn float-right';
@@ -324,16 +326,22 @@ CutPlannerApp.prototype.drawNewPlanForm = function(title, message, success){
     });
 }
 
-CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
+CutPlannerApp.prototype.isInBlueMode = function(){
     let invalid = false;
     for(let i = 0; i < this.rows.length; i++){
         if(this.rows[i].isInvalidTarget){
             invalid = true;
         }
-    }  
+    }
+    
+    return invalid;
+};
+
+CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
+    let invalid = this.isInBlueMode();
     
     if(invalid){
-        this.drawModal('Warning', 'Unable to set as current plan. Target dates cannot be greater than expected dates.');
+        this.drawModal('Warning', 'Unable to set this plan as current plan because it is not achievable (Expected dates are after target dates). Decide which group(s) should be delayed to make the part achievable');
     }
     
     return !invalid;
@@ -382,6 +390,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
             // Toggle buttons
             self.buttonToggle([self.buttonRemove, self.buttonPlanUpdate], selectedIsCurrent);
             self.buttonToggle([self.buttonAddNew], false);
+            //self.buttonToggle([self.buttonPlanUpdate], !self.isInBlueMode());
 
             // Refreshes the grid            
             self.refreshBucketAndGroupList(self, self.selected, 'json');
