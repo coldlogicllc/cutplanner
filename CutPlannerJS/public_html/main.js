@@ -283,7 +283,6 @@ CutPlannerApp.prototype.drawModal = function(title, message){
     });
 };
 
-
 CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
     let invalid = false;
     for(let i = 0; i < this.rows.length; i++){
