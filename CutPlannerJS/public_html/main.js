@@ -254,6 +254,7 @@ CutPlannerApp.prototype.repaintGui = function(self, groupnbr){
 
         // Handle name
         self.buckets[groupnbr][j].title = changedGroup.inputName.value + ': ' + self.buckets[groupnbr][j].n + ' manus';
+        self.buckets[groupnbr][j].firstChild.innerHTML = changedGroup.inputName.value;
         
         // Handle promise cut date
         changedGroup.inputPromiseCutDate.value = self.subtractDaysFromDate(changedGroup.inputPromiseDate.value, 3);
@@ -503,13 +504,10 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
             if(typeof currentGroupDiv[group.g] === "undefined"){
                 currentGroupDiv[group.g] = this.addDiv('group-day-plan');
                 currentGroupDiv[group.g].n = group.n;
+                currentGroupDiv[group.g].g = group.g;
                 currentDayDiv.appendChild(currentGroupDiv[group.g]);
                 currentDayDiv.divGroups.push(currentGroupDiv[group.g]);
                 
-                // Adding label here
-                /*currentGroupDiv[group.g].appendChild(
-                        this.addElement('span', this.groups[group.g].order_group_name, 'group-day-plan-label'));
-                */
                 // Used in repaint GUI
                 if(typeof this.buckets[group.g] === "undefined")
                 {
@@ -548,6 +546,12 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 span.style.width = this.manuWidthForCurrentDay + 'px';
                 currentDayDiv.divGroups[i].insertBefore(span, currentDayDiv.divGroups[i].firstChild);
             }
+            
+            // Adding label here
+            currentDayDiv.divGroups[i].insertBefore(
+                    this.addElement('span', this.groups[currentDayDiv.divGroups[i].g].order_group_name, 'group-day-plan-label')
+                    , currentDayDiv.divGroups[i].firstChild);
+            
             
             whiteSpace += currentDayDiv.divGroups[i].n;
         }
