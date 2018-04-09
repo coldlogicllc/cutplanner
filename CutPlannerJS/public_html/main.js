@@ -396,9 +396,14 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
             self.refreshBucketAndGroupList(self, self.selected, 'json');
         };
         
-        // If selected otherwise select current.
-        if(self.selected === data.plans[i].plannbr || (self.selected === 0 && data.plans[i].is_current_plan)){
+        // Select new plan
+        if(self.inputNewName !== null && self.inputNewName.value === data.plans[i].plan_name){
             option.click();
+        }else{
+            // If selected otherwise select current.
+            if(self.selected === data.plans[i].plannbr || (self.selected === 0 && data.plans[i].is_current_plan)){
+                option.click();
+            }
         }
         
         dropDownPlanSelectorOptions.appendChild(option);
