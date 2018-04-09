@@ -104,6 +104,9 @@ div.clear {
 }
 
 /* Grids */
+.grid-container {
+    clear: both;
+}
 
 .plan-container {
     display: flex;    

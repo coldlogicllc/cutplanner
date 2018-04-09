@@ -264,6 +264,41 @@ CutPlannerApp.prototype.repaintGui = function(self, groupnbr){
     self.refreshBucketAndGroupList(self, self.selected, 'save-only', changes);  
 };
 
+CutPlannerApp.prototype.drawModal = function(title, message){
+    let icon = '<span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>';
+    let dialog = this.addDiv('dialog-message');
+    dialog.title = title;
+    dialog.appendChild(this.addElement('p', icon + message, 'dialog-message-text'));
+    
+    $(dialog).dialog({
+      resizable: false,
+      modal: true,
+      width: '400px',
+      buttons: {
+        Ok: function() {
+          $( this ).dialog( "close" );
+          $( this ).remove();
+        }
+      }
+    });
+};
+
+
+CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
+    let invalid = false;
+    for(let i = 0; i < this.rows.length; i++){
+        if(this.rows[i].isInvalidTarget){
+            invalid = true;
+        }
+    }  
+    
+    if(invalid){
+        this.drawModal('Warning', 'Unable to set as current plan. Target dates cannot be greater than expected dates.');
+    }
+    
+    return !invalid;
+};
+
 CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr){
     let menuContainer = this.addDiv('menu-container');
     let dropDownMenuIdentifier = 'dropdownMenuButton_' + Math.floor((Math.random() * 10000000000) + 1);
@@ -367,6 +402,11 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     this.buttonPlanUpdate.title = 'Set this plan as the current factory plan.';
     this.buttonPlanUpdate.disabled = true;
     this.buttonPlanUpdate.addEventListener('click', function(){
+        
+        if(!self.canSetAsCurrentPlan()){
+            return;
+        }
+        
         if(confirm('Are you sure you want to replace the current plan with this one?')){
             // Refreshes the grid            
             self.refreshAll(self, self.selected, 'set-current'); 
@@ -572,6 +612,9 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
                     || this.inputTargetCutDate.value !== this.group.plan_group_target_cut_date
                     || this.inputExpectedDate.value !== this.group.plan_group_expected_date
                     || this.inputExpectedCutDate.value !== this.group.plan_group_expected_cut_date);
+            },
+            "isInvalidTarget" : function(){
+                return this.inputTargetDate.value < this.inputExpectedDate.value;
             },
             "targetDateChanged" : function(){
                 return this.inputTargetDate.value !== this.group.plan_group_target_date;
