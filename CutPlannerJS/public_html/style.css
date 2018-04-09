@@ -158,6 +158,10 @@ div.clear {
     border-width: 3px;
 }
 
+.remove {
+    display: none;
+}
+
 /* Menu Container */
 
 .dropdown {

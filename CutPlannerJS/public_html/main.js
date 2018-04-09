@@ -528,13 +528,14 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         currentPlanDiv.appendChild(currentDayDiv);
         
         // Add reserved box
-        let reservedGroup = this.addDiv('group-day-plan group-reserved');
         let reservedAmount = this.getReservedAmount(data, data.days[dayCounter].day);
+        let reservedGroup = this.addDiv('group-day-plan group-reserved ' + (reservedAmount === 0 ? 'remove' : ''));
         let computedAmount = reservedAmount === 0 ? 0 : reservedAmount / 20;
         reservedGroup.style.height = computedAmount + '%';
         reservedGroup.title = 'On demand orders: ' + reservedAmount + ' work units';
         reservedGroup.style.borderColor = this.reservedGroupColor;
         reservedGroup.style.borderStyle = 'dashed';
+        reservedGroup.appendChild(this.addElement('span', 'On-demand orders', 'group-day-plan-label'));
         currentDayDiv.appendChild(reservedGroup);
 
         // Loop groups
