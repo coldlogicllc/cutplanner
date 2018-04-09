@@ -479,7 +479,7 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
         currentPlanDiv.appendChild(currentDayDiv);
         
         // Add reserved box
-        let reservedGroup = this.addDiv('group-day-plan');
+        let reservedGroup = this.addDiv('group-day-plan group-reserved');
         let reservedAmount = this.getReservedAmount(data, data.days[dayCounter].day);
         let computedAmount = reservedAmount === 0 ? 0 : reservedAmount / 20;
         reservedGroup.style.height = computedAmount + '%';

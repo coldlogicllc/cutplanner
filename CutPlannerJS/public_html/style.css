@@ -149,9 +149,11 @@ div.clear {
 }
 
 .group-day-plan-label {
-    position: static;
-    background: #ddd;
-    clear: both;
+
+}
+
+.group-reserved {
+    border-width: 3px;
 }
 
 /* Menu Container */
