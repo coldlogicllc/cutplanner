@@ -506,6 +506,10 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 currentDayDiv.appendChild(currentGroupDiv[group.g]);
                 currentDayDiv.divGroups.push(currentGroupDiv[group.g]);
                 
+                // Adding label here
+                /*currentGroupDiv[group.g].appendChild(
+                        this.addElement('span', this.groups[group.g].order_group_name, 'group-day-plan-label'));
+                */
                 // Used in repaint GUI
                 if(typeof this.buckets[group.g] === "undefined")
                 {
@@ -518,10 +522,10 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 currentGroupDiv[group.g].n += group.n;
             }
             
-            currentGroupDiv[group.g].style.height = Math.round((90-computedAmount) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + '%';
+            currentGroupDiv[group.g].style.height = Math.round((85-computedAmount) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + '%';
             currentGroupDiv[group.g].style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
             currentGroupDiv[group.g].title = this.groups[group.g].order_group_name + ': ' + currentGroupDiv[group.g].n + ' manus';
-
+            
             // Loop manus
             for(let manuCounter = 0; manuCounter < group.n; manuCounter++)
             {

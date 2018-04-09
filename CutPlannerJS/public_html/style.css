@@ -94,7 +94,7 @@ span.label {
 }
 
 .date-stack {
-    width: 180px;
+    width: 200px;
     font-size: 14px;
     padding: 0px;    
     float: left;
@@ -124,7 +124,7 @@ div.clear {
     float: left;
     padding: 0;
     /*border-right: 2px dashed #ddd;*/
-    min-width: 180px;
+    min-width: 200px;
 }
 
 .day-title {
@@ -146,6 +146,12 @@ div.clear {
     overflow: hidden;
     padding: 0;
     cursor: pointer;
+}
+
+.group-day-plan-label {
+    position: static;
+    background: #ddd;
+    clear: both;
 }
 
 /* Menu Container */
