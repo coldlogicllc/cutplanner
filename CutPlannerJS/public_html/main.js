@@ -14,7 +14,10 @@ function CutPlannerApp(){
     this.buttonRemove = this.addInput('button', 'btn btn-danger');  
     this.buttonPlanUpdate = this.addInput('button', 'btn btn-warning float-right'); 
     this.buttonReset = this.addInput('button', 'btn float-right');
-    this.buttonSaveListView = this.addInput('button', 'btn float-right');            
+    this.buttonSaveListView = this.addInput('button', 'btn float-right'); 
+    
+    // UI form controls
+    this.inputNewName = null;
     
     // Flag to prevent leaving unsaved changes
     this.userHasUnsavedChanged = false;
@@ -92,6 +95,12 @@ CutPlannerApp.prototype.subtractDaysFromDate = function(str, days){
     
     return ret;
 };
+
+CutPlannerApp.prototype.todayDateFormat = function(){
+    let date = new Date();
+    
+    return date.getFullYear() + '-' + (date.getMonth() < 10 ? '0' + date.getMonth() : date.getMonth()) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
+}
 
 CutPlannerApp.prototype.formatDate = function(dateString){
   let date = this.getDateFromString(dateString);
@@ -284,6 +293,37 @@ CutPlannerApp.prototype.drawModal = function(title, message){
     });
 };
 
+CutPlannerApp.prototype.drawNewPlanForm = function(title, message, success){
+    this.inputNewName = this.addInput('text', 'input-new-name');
+    this.inputNewName.value = 'Unknown_' + this.todayDateFormat();
+    let p = this.addElement('p', message, 'dialog-message-text');
+    p.appendChild(this.inputNewName);
+    let dialog = this.addDiv('dialog-message');
+    dialog.title = title;
+    dialog.appendChild(p);
+    
+    $(dialog).dialog({
+      resizable: true,
+      modal: true,
+      width: '600px',
+      buttons: {
+        "Create a plan": function(){
+            success();
+            $( this ).dialog( "close" );
+            $( this ).remove();
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+          $( this ).remove();
+        }
+      },
+      close: function() {
+          $( this ).dialog( "close" );
+          $( this ).remove();
+      }
+    });
+}
+
 CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
     let invalid = false;
     for(let i = 0; i < this.rows.length; i++){
@@ -361,15 +401,19 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     this.buttonAddNew.disabled = false;
     this.buttonAddNew.onclick = function(){
         
-        // Set message text
-        msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
-        dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
+        self.drawNewPlanForm('Create a new plan', 'Please type the new plan name: ', function(){
+            
+            // Set message text
+            msgPlanWorkingOn.innerHTML = 'Working on a new plan...';
+            dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
 
-        // Toggle the buttons
-        self.buttonToggle([self.buttonPlanUpdate, self.buttonAddNew, self.buttonRemove], true);
+            // Toggle the buttons
+            self.buttonToggle([self.buttonPlanUpdate, self.buttonAddNew, self.buttonRemove], true);
+
+            // Refreshes the grid            
+            self.refreshAll(self, 0, 'new-plan', self.inputNewName.value);
+        });
         
-        // Refreshes the grid            
-        self.refreshAll(self, 0, 'new-plan');
     };
     
     // Remove plan button          
@@ -442,8 +486,12 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
         // Refresh draft list and select current
         self.refreshBucketAndGroupList(self, self.selected, 'save-plan', changes);        
         
+        // Disable reset and compute buttons
         this.disabled = true;
         this.className = 'btn float-right';
+        
+        self.buttonReset.disabled = true;
+        self.buttonReset.className = 'btn float-right';
     };
     
     menuContainer.appendChild(dropDownPlanSelector);
@@ -828,7 +876,7 @@ CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
         "value": plannbr, 
         "values": (typeof rows !== "undefined" ? rows : []) 
     };
-    console.log(post);
+    //console.log(post);
     this.startLoading(this);
     RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
 };
