@@ -1,8 +1,11 @@
 function CutPlannerApp(){    
     
+    // The current user that is logged in.
+    this.currentUser = '';
+    
     // UI properties
     this.maxDayHeight = 500;
-    //this.maxDailyWorkUnits = 1270;   
+    //this.maxDailyWorkUnits = 1270;    
     this.reservedGroupColor = '#00ff00';
     this.rows = [];
     this.groups = [];
@@ -10,11 +13,11 @@ function CutPlannerApp(){
     this.selected = 0;
     
     // UI controls
-    this.buttonAddNew = this.addInput('button', 'btn btn-success');
-    this.buttonRemove = this.addInput('button', 'btn btn-danger');  
-    this.buttonPlanUpdate = this.addInput('button', 'btn btn-warning float-right'); 
-    this.buttonReset = this.addInput('button', 'btn float-right');
-    this.buttonSaveListView = this.addInput('button', 'btn float-right'); 
+    this.buttonAddNew = this.addInput( 'button', 'btn btn-success' );
+    this.buttonRemove = this.addInput( 'button', 'btn btn-danger' );  
+    this.buttonPlanUpdate = this.addInput( 'button', 'btn btn-warning float-right' ); 
+    this.buttonReset = this.addInput( 'button', 'btn float-right' );
+    this.buttonSaveListView = this.addInput( 'button', 'btn float-right' ); 
     
     // UI form controls
     this.inputNewName = null;
@@ -23,49 +26,49 @@ function CutPlannerApp(){
     this.userHasUnsavedChanged = false;
 };
 
-CutPlannerApp.prototype.addCell = function(element){
-    var cell = this.addElement('td', '', 'table-cell');
-    cell.appendChild(element);
+CutPlannerApp.prototype.addCell = function( element ){
+    var cell = this.addElement( 'td', '', 'table-cell' );
+    cell.appendChild( element );
     
     return cell;
 };
 
-CutPlannerApp.prototype.addCellArray = function(elements){
-    var cell = this.addElement('td', '', 'table-cell');
-    for(let i = 0; i < elements.length; i++){
+CutPlannerApp.prototype.addCellArray = function( elements ){
+    var cell = this.addElement( 'td', '', 'table-cell' );
+    for( let i = 0; i < elements.length; i++ ){
         cell.appendChild(elements[i]);
     }
         
     return cell;
 };
 
-CutPlannerApp.prototype.addDiv = function(class_name, text){
-    var div = document.createElement('div');
-    div.setAttribute('class', class_name);   
-    div.innerHTML = (typeof text === "undefined" ? '' : text);
+CutPlannerApp.prototype.addDiv = function( class_name, text ){
+    var div = document.createElement( 'div' );
+    div.setAttribute( 'class', class_name );   
+    div.innerHTML = ( typeof text === "undefined" ? '' : text );
     
     return div;
 };
 
-CutPlannerApp.prototype.addElement = function(tag_name, text, class_name){
-    var element = document.createElement(tag_name);
+CutPlannerApp.prototype.addElement = function( tag_name, text, class_name ){
+    var element = document.createElement( tag_name );
     element.className = typeof class_name !== "undefined" ? class_name :  '';
     element.innerHTML = text;    
     
     return element;
 };
 
-CutPlannerApp.prototype.addInput = function(type, class_name){
-    var element = document.createElement('input');
-    element.setAttribute('type', type);
+CutPlannerApp.prototype.addInput = function( type, class_name ){
+    var element = document.createElement( 'input' );
+    element.setAttribute( 'type', type );
     element.className = typeof class_name !== "undefined" ? class_name :  '';
     
     return element;
 };
 
-CutPlannerApp.prototype.totalManusForDay = function(groups){
+CutPlannerApp.prototype.totalManusForDay = function( groups ){
     var totalmanus = 0;
-    for(var i = 0; i < groups.length; i++)
+    for( var i = 0; i < groups.length; i++ )
     {
         totalmanus += groups[i].n;
     }
@@ -73,20 +76,20 @@ CutPlannerApp.prototype.totalManusForDay = function(groups){
     return totalmanus;
 };
 
-CutPlannerApp.prototype.datesEqual = function(date1, date2){
+CutPlannerApp.prototype.datesEqual = function( date1, date2 ){
     date1 = date1.getDate() + '/' + date1.getMonth() + '/' + date1.getFullYear();
     date2 = date2.getDate() + '/' + (1+date2.getMonth()) + '/' + date2.getFullYear();    
     
     return date1 === date2;
 };
 
-CutPlannerApp.prototype.getDateFromString = function(str){
+CutPlannerApp.prototype.getDateFromString = function( str ){
    let parts = str.split('-');    
    
-   return new Date(parts[0], parts[1], parts[2]);
+   return new Date( parts[0], parts[1], parts[2] );
 };
 
-CutPlannerApp.prototype.subtractDaysFromDate = function(str, days){
+CutPlannerApp.prototype.subtractDaysFromDate = function( str, days ){
     let parts = str.split('-');
     let date = new Date(parts[0], parts[1], parts[2]);
     date.setDate(date.getDate()-days);
@@ -96,13 +99,13 @@ CutPlannerApp.prototype.subtractDaysFromDate = function(str, days){
     return ret;
 };
 
-CutPlannerApp.prototype.todayDateFormat = function(){
+CutPlannerApp.prototype.todayDateFormat = function( ){
     let date = new Date();
     
     return date.getFullYear() + '-' + (date.getMonth() < 10 ? '0' + date.getMonth() : date.getMonth()) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
 }
 
-CutPlannerApp.prototype.formatDate = function(dateString){
+CutPlannerApp.prototype.formatDate = function( dateString ){
   let date = this.getDateFromString(dateString);
   let today = new Date();
   let tomorrow = new Date();
@@ -129,7 +132,7 @@ CutPlannerApp.prototype.formatDate = function(dateString){
   return daysOfWeek[date.getDay()] + ', ' + month + '/' + day; 
 };
 
-CutPlannerApp.prototype.onTargetDateChange = function(self, element){
+CutPlannerApp.prototype.onTargetDateChange = function( self, element ){
     self.userHasUnsavedChanges = false;
     for(let i = 0; i < self.rows.length; i++){
 
@@ -165,23 +168,23 @@ CutPlannerApp.prototype.onTargetDateChange = function(self, element){
     };
 };
 
-CutPlannerApp.prototype.highlightOnChange = function(context){
+CutPlannerApp.prototype.highlightOnChange = function( context ){
     if(context.value !== context.originalvalue){
         context.row.style.background = '#ffe160';
     }
 };
 
-CutPlannerApp.prototype.buttonToggle = function(buttons, value){
-    for(let i = 0; i < buttons.length; i++){
+CutPlannerApp.prototype.buttonToggle = function( buttons, value ) {
+    for( let i = 0; i < buttons.length; i++ ) {
         buttons[i].disabled = value;
     }
 };
 
-CutPlannerApp.prototype.isCurrentPlan = function(data, plan){
+CutPlannerApp.prototype.isCurrentPlan = function( data, plan ) {
     return data.current_plannbr === plan.plannbr;
 };
 
-CutPlannerApp.prototype.getReservedAmount = function(data, dateSearch){
+CutPlannerApp.prototype.getReservedAmount = function( data, dateSearch ) {
     let amount = 0;
     
     for(let i = 0; i < data.reserved.length; i++){
@@ -195,16 +198,19 @@ CutPlannerApp.prototype.getReservedAmount = function(data, dateSearch){
     return amount;
 };
 
-CutPlannerApp.prototype.startLoading = function(context){
+CutPlannerApp.prototype.startLoading = function( context ) {
     context.loadingDiv.style.display = '';
 };
 
-CutPlannerApp.prototype.doneLoading = function(context){
+CutPlannerApp.prototype.doneLoading = function( context ) {
     context.loadingDiv.style.display = 'none';
 };
 
-CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){    
-    context.loadJson(function(data){
+CutPlannerApp.prototype.refreshAll = function( context, plannbr, action, values ) {    
+    context.loadJson( function( data ){
+        
+        // Store user
+        context.setCurrentUser( data );
         
         if(action !== 'save-only') {
             // Refreshes the menu
@@ -224,8 +230,11 @@ CutPlannerApp.prototype.refreshAll = function(context, plannbr, action, values){
     }, plannbr, action, values);
 };
 
-CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, action, values) {
-    context.loadJson(function(data){  
+CutPlannerApp.prototype.refreshBucketAndGroupList = function( context, plannbr, action, values ) {
+    context.loadJson( function( data ) {  
+        
+        // Store user
+        context.setCurrentUser( data );
         
         if(action !== 'save-only') {
             // Refreshes the grid
@@ -241,7 +250,7 @@ CutPlannerApp.prototype.refreshBucketAndGroupList = function(context, plannbr, a
     }, plannbr, action, values);
 };
 
-CutPlannerApp.prototype.getRowByGroupnbr = function(self, groupnbr){
+CutPlannerApp.prototype.getRowByGroupnbr = function( self, groupnbr ) {
     for(let i = 0; i < self.rows.length; i++){
         if(self.rows[i].group.order_groupnbr === groupnbr){
             return self.rows[i];
@@ -251,7 +260,7 @@ CutPlannerApp.prototype.getRowByGroupnbr = function(self, groupnbr){
     return null;
 }
 
-CutPlannerApp.prototype.repaintGui = function(self, groupnbr){
+CutPlannerApp.prototype.repaintGui = function( self, groupnbr ) {
     
     let changes = [];
     let changedGroup = self.getRowByGroupnbr(self, groupnbr);
@@ -276,7 +285,7 @@ CutPlannerApp.prototype.repaintGui = function(self, groupnbr){
     self.refreshBucketAndGroupList(self, self.selected, 'save-only', changes);  
 };
 
-CutPlannerApp.prototype.drawModal = function(title, message){
+CutPlannerApp.prototype.drawModal = function( title, message ) {
     let icon = '<span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>';
     let dialog = this.addDiv('dialog-message');
     dialog.title = title;
@@ -295,9 +304,9 @@ CutPlannerApp.prototype.drawModal = function(title, message){
     });
 };
 
-CutPlannerApp.prototype.drawNewPlanForm = function(title, message, success){
+CutPlannerApp.prototype.drawNewPlanForm = function( title, message, success ) {
     this.inputNewName = this.addInput('text', 'input-new-name');
-    this.inputNewName.value = 'Unknown_' + this.todayDateFormat();
+    this.inputNewName.value = this.currentUser + '_' + this.todayDateFormat();
     let p = this.addElement('p', message, 'dialog-message-text');
     p.appendChild(this.inputNewName);
     let dialog = this.addDiv('dialog-message');
@@ -326,7 +335,7 @@ CutPlannerApp.prototype.drawNewPlanForm = function(title, message, success){
     });
 }
 
-CutPlannerApp.prototype.isInBlueMode = function(){
+CutPlannerApp.prototype.isInBlueMode = function( ) {
     let invalid = false;
     for(let i = 0; i < this.rows.length; i++){
         if(this.rows[i].isInvalidTarget){
@@ -337,7 +346,7 @@ CutPlannerApp.prototype.isInBlueMode = function(){
     return invalid;
 };
 
-CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
+CutPlannerApp.prototype.canSetAsCurrentPlan = function( ) {
     let invalid = this.isInBlueMode();
     
     if(invalid){
@@ -347,7 +356,18 @@ CutPlannerApp.prototype.canSetAsCurrentPlan = function(){
     return !invalid;
 };
 
-CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr){
+CutPlannerApp.prototype.setCurrentUser = function( data ) {
+    
+    if(data === undefined || data.user === undefined || data.user.name === undefined){
+        return;
+    }
+    
+    this.currentUser = data.user.name;
+    
+    //console.log(data.user.name);
+};
+
+CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr ) {
     let menuContainer = this.addDiv('menu-container');
     let dropDownMenuIdentifier = 'dropdownMenuButton_' + Math.floor((Math.random() * 10000000000) + 1);
     let dropDownMenuText = 'Select a draft plan';
@@ -517,7 +537,7 @@ CutPlannerApp.prototype.buildPlanSelector = function(rootElement, data, plannbr)
     menuContainer.appendChild(this.buttonPlanUpdate); 
 };
 
-CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
+CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
 
     let currentPlanDiv = this.addDiv('plan-container');       
     rootElement.appendChild(currentPlanDiv);
@@ -624,7 +644,7 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
     }
 };
 
-CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
+CutPlannerApp.prototype.buildGroupList = function( rootElement, data ) {
     let self = this;
     let groups = [];
     let table = this.addElement('table', '', 'table');
@@ -852,58 +872,61 @@ CutPlannerApp.prototype.buildGroupList = function(rootElement, data){
     rootElement.appendChild(table);
 };
 
-CutPlannerApp.prototype.loadHtml = function(widget_element_id){        
+CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {        
     var self = this;
-    let section = document.createElement('section');
+    let section = document.createElement( 'section' );
     
-    self.loadingDiv = self.addDiv('loading', 'Loading please wait...');
-    section.appendChild(self.loadingDiv);
+    self.loadingDiv = self.addDiv( 'loading', 'Loading please wait...' );
+    section.appendChild( self.loadingDiv );
     
     // Generate widget
-    document.getElementById(widget_element_id).appendChild(section);
+    document.getElementById( widget_element_id ).appendChild( section );
     
-    if(RBT !== null){
+    if(RBT !== undefined && RBT.jsonServerURL !== undefined) {
         RBT.jsonServerURL = 'http://ds3.coldlogic.com:24089/';
     }
     
-    this.loadJson(function(data){
-                                
+    this.loadJson( function( data ){
+           
+        // Store user
+        self.setCurrentUser( data );
+        
         // Build menu
-        self.menuDiv = self.addDiv('menu-container');    
-        self.buildPlanSelector(self.menuDiv, data);    
-        section.appendChild(self.menuDiv);
+        self.menuDiv = self.addDiv( 'menu-container' );    
+        self.buildPlanSelector( self.menuDiv, data );    
+        section.appendChild( self.menuDiv );
 
         // Build grid
-        self.gridDiv = self.addDiv('grid-container');    
-        self.buildBucketGrid(self.gridDiv, data);    
-        section.appendChild(self.gridDiv);
+        self.gridDiv = self.addDiv( 'grid-container' );    
+        self.buildBucketGrid( self.gridDiv, data );    
+        section.appendChild( self.gridDiv );
 
         // Build list view
-        self.listDiv = self.addDiv('list-container');
-        self.buildGroupList(self.listDiv, data);
-        section.appendChild(self.listDiv);
+        self.listDiv = self.addDiv( 'list-container' );
+        self.buildGroupList( self.listDiv, data );
+        section.appendChild( self.listDiv );
               
         self.loadingDiv.style.display = 'none';
-    }, 0, 'json');
+    }, 0, 'json' );
 };
 
-CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
+CutPlannerApp.prototype.loadJson = function( callback, plannbr, action, rows ){
     
     let post = { 
         "id": "rbt_widget_CutPlanner", 
         "action": action, 
         "value": plannbr, 
-        "values": (typeof rows !== "undefined" ? rows : []) 
+        "values": ( typeof rows !== "undefined" ? rows : [] ) 
     };
     
     //console.log(post);
     
-    this.startLoading(this);
+    this.startLoading( this );
     
     try {
-        RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
+        RBT.putGetJson( 'cutplanner', JSON.stringify(post), callback, null );
     }
-    catch(exception) {
-        this.drawModal('Error', exception.message);
+    catch ( exception ) {
+        this.drawModal( 'Error', exception.message );
     }
 };
