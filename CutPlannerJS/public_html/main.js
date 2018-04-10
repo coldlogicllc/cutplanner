@@ -77,6 +77,18 @@ CutPlannerApp.prototype.totalManusForDay = function( groups ){
     return totalmanus;
 };
 
+CutPlannerApp.prototype.totalGroupsForDay = function( groups ){
+    var totalgroups = [];
+    for( var i = 0; i < groups.length; i++ )
+    {
+        if(totalgroups.indexOf(groups[i].g) === -1){
+            totalgroups.push(groups[i].g);
+        }
+    }
+    
+    return totalgroups.length;
+};
+
 CutPlannerApp.prototype.datesEqual = function( date1, date2 ){
     date1 = date1.getDate() + '/' + date1.getMonth() + '/' + date1.getFullYear();
     date2 = date2.getDate() + '/' + (1+date2.getMonth()) + '/' + date2.getFullYear();    
@@ -585,6 +597,7 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
     // Loop days
     for(let dayCounter = 0; dayCounter < data.days.length; dayCounter++)
     {
+        let minBuffer = 4;
         let currentDayDiv = this.addDiv('day-plan');
         let dayHeaderDiv = this.addElement('div', this.formatDate(data.days[dayCounter].day), 'day-title');
         dayHeaderDiv.title = data.days[dayCounter].day;
@@ -606,8 +619,9 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
 
         // Loop groups
         this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
+        this.totalGroupsByCurrentDay = this.totalGroupsForDay(data.days[dayCounter].plan);
         this.manuWidthForCurrentDay = parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
-
+        //console.log(this.totalGroupsByCurrentDay);
         let currentGroupDiv = []; // To hold matching groups
         currentDayDiv.divGroups = [];
        
@@ -635,7 +649,8 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
                 currentGroupDiv[group.g].n += group.n;
             }
             
-            currentGroupDiv[group.g].style.height = Math.round((85-computedAmount) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + '%';
+            let height = Math.round((85-computedAmount-(minBuffer*this.totalGroupsByCurrentDay)) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + minBuffer;
+            currentGroupDiv[group.g].style.height = height + '%';
             currentGroupDiv[group.g].style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
             currentGroupDiv[group.g].title = this.groups[group.g].order_group_name + ': ' + currentGroupDiv[group.g].n + ' manus';
             
