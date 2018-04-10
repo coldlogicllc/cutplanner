@@ -10,6 +10,7 @@ function CutPlannerApp(){
     this.rows = [];
     this.groups = [];
     this.buckets = [];
+    this.plans = [];
     this.selected = 0;
     
     // UI controls
@@ -304,9 +305,36 @@ CutPlannerApp.prototype.drawModal = function( title, message ) {
     });
 };
 
+CutPlannerApp.prototype.getNextPlanName = function( name , increment ) {
+    let found = false;
+    
+    if( increment === undefined ) {
+        increment = 0;
+    }
+    
+    for( let i = 0; i < this.plans.length; i++ ) {
+        if(this.plans[i] === name + this.getNextSuffix(increment)) {
+            found = true;
+        }
+    }
+    
+    if( !found ) {
+        return name + this.getNextSuffix(increment);
+    }
+    else{
+        return this.getNextPlanName(name, ++increment);
+    }
+    
+    
+};
+
+CutPlannerApp.prototype.getNextSuffix = function(increment){
+    return increment === 0 ? '' :  '_' + increment;
+}
+
 CutPlannerApp.prototype.drawNewPlanForm = function( title, message, success ) {
     this.inputNewName = this.addInput('text', 'input-new-name');
-    this.inputNewName.value = this.currentUser + '_' + this.todayDateFormat();
+    this.inputNewName.value = this.getNextPlanName(this.currentUser + '_' + this.todayDateFormat());
     let p = this.addElement('p', message, 'dialog-message-text');
     p.appendChild(this.inputNewName);
     let dialog = this.addDiv('dialog-message');
@@ -393,8 +421,10 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
     dropDownPlanSelector.appendChild(dropDownPlanSelectorButton);
     dropDownPlanSelector.appendChild(dropDownPlanSelectorOptions);
         
+    this.plans = [];
     // Plans drop down menu
     for(let i = 0; i < data.plans.length; i++){
+        this.plans.push(data.plans[i].plan_name);
         data.plans[i].is_current_plan = this.isCurrentPlan(data, data.plans[i]);
         let option = this.addElement('a', data.plans[i].plan_name + (data.plans[i].is_current_plan ? ' &#x2714;' : ''), 'dropdown-item');      
         option.onclick = function(){
@@ -428,6 +458,8 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
         
         dropDownPlanSelectorOptions.appendChild(option);
     }
+    
+    console.log(this.plans);
             
     // Add new plan button    
     this.buttonAddNew.value = 'New';
