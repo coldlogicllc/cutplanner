@@ -328,7 +328,7 @@ CutPlannerApp.prototype.getNextPlanName = function( name , increment ) {
     
 };
 
-CutPlannerApp.prototype.getNextSuffix = function(increment){
+CutPlannerApp.prototype.getNextSuffix = function( increment ) {
     return increment === 0 ? '' :  '_' + increment;
 }
 
@@ -366,7 +366,7 @@ CutPlannerApp.prototype.drawNewPlanForm = function( title, message, success ) {
 CutPlannerApp.prototype.isInBlueMode = function( ) {
     let invalid = false;
     for(let i = 0; i < this.rows.length; i++){
-        if(this.rows[i].isInvalidTarget){
+        if(this.rows[i].isInvalidTarget()){
             invalid = true;
         }
     }
