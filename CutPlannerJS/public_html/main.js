@@ -610,11 +610,14 @@ CutPlannerApp.prototype.buildBucketGrid = function(rootElement, data){
                 currentDayDiv.divGroups[i].insertBefore(span, currentDayDiv.divGroups[i].firstChild);
             }
             
-            // Adding label here
-            currentDayDiv.divGroups[i].insertBefore(
-                    this.addElement('span', this.groups[currentDayDiv.divGroups[i].g].order_group_name, 'group-day-plan-label')
-                    , currentDayDiv.divGroups[i].firstChild);
-            
+            // If total manu is greater than 10%
+            if(currentDayDiv.divGroups[i].n / this.totalManusByCurrentDay > .15)
+            {
+                // Adding label here
+                currentDayDiv.divGroups[i].insertBefore(
+                        this.addElement('span', this.groups[currentDayDiv.divGroups[i].g].order_group_name, 'group-day-plan-label')
+                        , currentDayDiv.divGroups[i].firstChild);
+            }
             
             whiteSpace += currentDayDiv.divGroups[i].n;
         }
@@ -885,13 +888,22 @@ CutPlannerApp.prototype.loadHtml = function(widget_element_id){
 };
 
 CutPlannerApp.prototype.loadJson = function(callback, plannbr, action, rows){
+    
     let post = { 
         "id": "rbt_widget_CutPlanner", 
         "action": action, 
         "value": plannbr, 
         "values": (typeof rows !== "undefined" ? rows : []) 
     };
+    
     //console.log(post);
+    
     this.startLoading(this);
-    RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
+    
+    try {
+        RBT.putGetJson('cutplanner', JSON.stringify(post), callback, null);
+    }
+    catch(exception) {
+        this.drawModal('Error', exception.message);
+    }
 };
