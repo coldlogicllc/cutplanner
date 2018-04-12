@@ -471,7 +471,7 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
         dropDownPlanSelectorOptions.appendChild(option);
     }
     
-    console.log(this.plans);
+    //console.log(this.plans);
             
     // Add new plan button    
     this.buttonAddNew.value = 'New';
@@ -600,6 +600,26 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         let minBuffer = 4;
         let currentDayDiv = this.addDiv('day-plan');
         let dayHeaderDiv = this.addElement('div', this.formatDate(data.days[dayCounter].day), 'day-title');
+        let dayHeaderInfoDiv = this.addElement('div', '', 'day-title-info');
+        let inputWorkers = this.addInput('text', 'day-title-input');
+        let inputHours = this.addInput('text', 'day-title-input');
+        let workerLabel = this.addElement('span', 'Workers:', 'day-title-label');
+        let hourLabel = this.addElement('span', '&nbsp;&nbsp;Hours:', 'day-title-label');
+        
+        inputWorkers.onkeyup = function(){
+            
+        };
+        
+        inputHours.onkeyup = function(){
+            
+        };
+        
+        dayHeaderInfoDiv.appendChild(workerLabel);
+        dayHeaderInfoDiv.appendChild(inputWorkers);
+        dayHeaderInfoDiv.appendChild(hourLabel);
+        dayHeaderInfoDiv.appendChild(inputHours);        
+        dayHeaderDiv.appendChild(dayHeaderInfoDiv);
+        
         dayHeaderDiv.title = data.days[dayCounter].day;
         currentDayDiv.manuPosition = 0;
         currentDayDiv.style.height = this.maxDayHeight + 'px';
