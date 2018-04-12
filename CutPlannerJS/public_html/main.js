@@ -620,7 +620,7 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         // Loop groups
         this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
         this.totalGroupsByCurrentDay = this.totalGroupsForDay(data.days[dayCounter].plan);
-        this.manuWidthForCurrentDay = parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
+        this.manuWidthForCurrentDay = parseFloat(180 / 60).toFixed(2) // parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
         //console.log(this.totalGroupsByCurrentDay);
         let currentGroupDiv = []; // To hold matching groups
         currentDayDiv.divGroups = [];
@@ -649,7 +649,8 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
                 currentGroupDiv[group.g].n += group.n;
             }
             
-            let height = Math.round((90-computedAmount-(minBuffer*this.totalGroupsByCurrentDay)) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + minBuffer;
+            //let height = Math.round((90-computedAmount-(minBuffer*this.totalGroupsByCurrentDay)) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + minBuffer;
+            let height = (90-computedAmount-(minBuffer*this.totalGroupsByCurrentDay)) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay) + minBuffer;
             currentGroupDiv[group.g].style.height = height + '%';
             currentGroupDiv[group.g].style.borderColor = this.groups[group.g].order_group_color === 'white' ? '#ffffff' : this.groups[group.g].order_group_color;
             currentGroupDiv[group.g].title = this.groups[group.g].order_group_name + ': ' + currentGroupDiv[group.g].n + ' manus';
