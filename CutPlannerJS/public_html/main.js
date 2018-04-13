@@ -273,6 +273,25 @@ CutPlannerApp.prototype.getRowByGroupnbr = function( self, groupnbr ) {
     return null;
 }
 
+CutPlannerApp.prototype.saveDayInformation = function ( self, json) {
+    
+    if ( self.selcted === 0 ) {
+        self.drawModal ( 'Warning', 'You must select a plan first.' );
+    }
+    
+    if ( json.workers === '' || isNaN( json.workers ) ) {
+        return;
+    }
+    
+    if ( json.hours === '' || isNaN( json.hours  ) ) {
+        return;
+    }
+    
+    self.loadJson(function(){
+        self.doneLoading(self);
+    }, self.selected, 'save-plan-day', [], json );
+};
+
 CutPlannerApp.prototype.repaintGui = function( self, groupnbr ) {
     
     let changes = [];
@@ -583,11 +602,18 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
 
 CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
 
+    let self = this;
     let currentPlanDiv = this.addDiv('plan-container');       
     rootElement.appendChild(currentPlanDiv);
     
     this.groups = [];
     this.buckets = [];
+    this.plandays = [];
+    
+    for(let planDayCounter = 0; planDayCounter < data.plan_days.length; planDayCounter++)
+    {
+        this.plandays[data.plan_days[planDayCounter].dateofwork] = data.plan_days[planDayCounter];
+    }
     
     for(let groupCounter = 0; groupCounter < data.groups.length; groupCounter++)
     {
@@ -606,12 +632,25 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         let workerLabel = this.addElement('span', 'Workers:', 'day-title-label');
         let hourLabel = this.addElement('span', '&nbsp;&nbsp;Hours:', 'day-title-label');
         
+        if(this.plandays[data.days[dayCounter].day] !== undefined) {
+            inputWorkers.value = this.plandays[data.days[dayCounter].day].workers;
+            inputHours.value = this.plandays[data.days[dayCounter].day].hours;
+        }
+        
         inputWorkers.onkeyup = function(){
-            
+            self.saveDayInformation(self, 
+                { day : data.days[dayCounter].day,
+                  workers : inputWorkers.value,
+                  hours: inputHours.value 
+                });
         };
         
         inputHours.onkeyup = function(){
-            
+            self.saveDayInformation(self, 
+                { day : data.days[dayCounter].day,
+                  workers : inputWorkers.value,
+                  hours: inputHours.value 
+                });
         };
         
         dayHeaderInfoDiv.appendChild(workerLabel);
@@ -699,7 +738,7 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
             }
             
             // If total manu is greater than 10%
-            if(currentDayDiv.divGroups[i].n / this.totalManusByCurrentDay > .15)
+            if(currentDayDiv.divGroups[i].n / this.totalManusByCurrentDay > .20)
             {
                 // Adding label here
                 currentDayDiv.divGroups[i].insertBefore(
@@ -978,13 +1017,16 @@ CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {
     }, 0, 'json' );
 };
 
-CutPlannerApp.prototype.loadJson = function( callback, plannbr, action, rows ){
+CutPlannerApp.prototype.loadJson = function( callback, plannbr, action, rows, dayinfo ){
     
     let post = { 
         "id": "rbt_widget_CutPlanner", 
         "action": action, 
         "value": plannbr, 
-        "values": ( typeof rows !== "undefined" ? rows : [] ) 
+        "values": rows !== undefined ? rows : [],
+        "day": dayinfo !== undefined ? dayinfo.day : '',
+        "hours": dayinfo !== undefined ? dayinfo.hours : '',
+        "workers": dayinfo !== undefined ? dayinfo.workers : ''
     };
     
     //console.log(post);
