@@ -542,7 +542,7 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
     this.buttonPlanUpdate.value = 'Set as Current Plan';
     this.buttonPlanUpdate.title = 'Set this plan as the current factory plan.';
     this.buttonPlanUpdate.disabled = true;
-    this.buttonPlanUpdate.addEventListener('click', function(){
+    this.buttonPlanUpdate.onclick = function(){
         
         if(!self.canSetAsCurrentPlan()){
             return;
@@ -555,7 +555,7 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
             // Disable remove since we don't want to delete current plan.
             self.buttonRemove.disabled = true;
         }
-    });
+    };
     
     // Reset button
     this.buttonReset.value = 'Reset';
@@ -738,7 +738,7 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
             }
             
             // If total manu is greater than 10%
-            if(currentDayDiv.divGroups[i].n / this.totalManusByCurrentDay > .20)
+            if(currentDayDiv.divGroups[i].n / this.totalManusByCurrentDay > .12)
             {
                 // Adding label here
                 currentDayDiv.divGroups[i].insertBefore(
