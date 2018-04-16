@@ -647,7 +647,7 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
                 });
         };
         
-        inputWorkers.onchange = function(){
+        inputWorkers.onchange = function(){ 
             self.saveDayInformation(self, 
                 { day : data.days[dayCounter].day,
                   workers : inputWorkers.value,
