@@ -628,7 +628,9 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         let dayHeaderDiv = this.addElement('div', this.formatDate(data.days[dayCounter].day), 'day-title');
         let dayHeaderInfoDiv = this.addElement('div', '', 'day-title-info');
         let inputWorkers = this.addInput('number', 'day-title-input');
-        let inputHours = this.addInput('text', 'day-title-input');
+        let inputHours = this.addInput('number', 'day-title-input');
+        inputWorkers.setAttribute('step', 1);
+        inputHours.setAttribute('step', 'any');
         let workerLabel = this.addElement('span', 'Workers:', 'day-title-label');
         let hourLabel = this.addElement('span', '&nbsp;&nbsp;Hours:', 'day-title-label');
         
@@ -645,7 +647,23 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
                 });
         };
         
+        inputWorkers.onchange = function(){
+            self.saveDayInformation(self, 
+                { day : data.days[dayCounter].day,
+                  workers : inputWorkers.value,
+                  hours: inputHours.value 
+                });
+        };
+        
         inputHours.onkeyup = function(){
+            self.saveDayInformation(self, 
+                { day : data.days[dayCounter].day,
+                  workers : inputWorkers.value,
+                  hours: inputHours.value 
+                });
+        };
+        
+        inputHours.onchange = function(){
             self.saveDayInformation(self, 
                 { day : data.days[dayCounter].day,
                   workers : inputWorkers.value,
