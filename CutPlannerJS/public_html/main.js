@@ -630,7 +630,9 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         let inputWorkers = this.addInput('number', 'day-title-input');
         let inputHours = this.addInput('number', 'day-title-input');
         inputWorkers.setAttribute('step', 1);
-        inputHours.setAttribute('step', 'any');
+        inputWorkers.setAttribute('min', 0);
+        inputHours.setAttribute('step', .5);
+        inputHours.setAttribute('min', 0);
         let workerLabel = this.addElement('span', 'Workers:', 'day-title-label');
         let hourLabel = this.addElement('span', '&nbsp;&nbsp;Hours:', 'day-title-label');
         
