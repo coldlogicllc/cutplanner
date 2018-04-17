@@ -258,6 +258,7 @@ CutPlannerApp.prototype.refreshAll = function( context, plannbr, action, values,
         }
         
         context.doneLoading(context);
+        context.userHasUnsavedChanges = false;
     }, plannbr, action, values, values2);
 };
 
@@ -278,6 +279,7 @@ CutPlannerApp.prototype.refreshBucketAndGroupList = function( context, plannbr, 
         }
         
         context.doneLoading(context);
+        context.userHasUnsavedChanges = false;
     }, plannbr, action, values, values2 );
 };
 
