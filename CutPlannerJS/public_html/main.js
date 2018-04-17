@@ -1,10 +1,14 @@
 function CutPlannerApp(){    
     
+    // Isolate default values here
+    this.defaultHours = 7.5;
+    this.defaultWorkers = 20;
+    this.defaultWorkUnits = 8;
+    this.maxDayHeight = 500;
+    
     // The current user that is logged in.
     this.currentUser = '';
     
-    // UI properties
-    this.maxDayHeight = 500;
     //this.maxDailyWorkUnits = 1270;    
     this.reservedGroupColor = '#00ff00';
     this.rows = [];
@@ -665,16 +669,16 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
             inputHours.originalvalue = this.plandays[data.days[dayCounter].day].hours;
             
             /* Set computed width here */
-            let formula = this.plandays[data.days[dayCounter].day].workers * this.plandays[data.days[dayCounter].day].hours * 8;
+            let formula = this.plandays[data.days[dayCounter].day].workers * this.plandays[data.days[dayCounter].day].hours * this.defaultWorkUnits;
             currentDayDiv.style.minWidth = formula / 6 + 'px'; // Should equal 200 pixels for default data.
         }else {
-            inputWorkers.value = 20; /* default */
+            inputWorkers.value = this.defaultWorkers; /* default */
             inputWorkers.originalvalue = '';
-            inputHours.value = 7.5; /* default */
+            inputHours.value = this.defaultHours; /* default */
             inputHours.originalvalue = '';
             
-            /* Set width here */
-            currentDayDiv.style.minWidth = '200px';
+            /* Set computed width here */
+            currentDayDiv.style.minWidth = ((this.defaultWorkers * this.defaultHours * this.defaultWorkUnits) / 6) + 'px';
         }
         
         this.days.push({
