@@ -146,7 +146,7 @@ div.clear {
 }
 
 .day-title-info {
-    
+    min-width: 180px;
 }
 
 .day-title-input {
