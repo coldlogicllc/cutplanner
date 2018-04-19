@@ -785,6 +785,11 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
                 currentGroupDiv[group.g].n += group.n;
             }
             
+            if(this.groups[group.g] === undefined)
+            {
+                continue
+            }
+            
             //let height = Math.round((90-computedAmount-(minBuffer*this.totalGroupsByCurrentDay)) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay), 0) + minBuffer;
             let height = (90-computedAmount-(minBuffer*this.totalGroupsByCurrentDay)) * (currentGroupDiv[group.g].n  / this.totalManusByCurrentDay) + minBuffer;
             currentGroupDiv[group.g].style.height = height + '%';
@@ -817,10 +822,17 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
             // If total manu is greater than 10%
             if(currentDayDiv.divGroups[i].n / this.totalManusByCurrentDay > .12)
             {
-                // Adding label here
-                currentDayDiv.divGroups[i].insertBefore(
+                if(this.groups[currentDayDiv.divGroups[i].g] === undefined){
+                    currentDayDiv.divGroups[i].insertBefore(
+                        this.addElement('span', 'Group #' + currentDayDiv.divGroups[i].g + ' is missing', 'group-day-plan-label')
+                        , currentDayDiv.divGroups[i].firstChild);
+                }
+                else {
+                    // Adding label here
+                    currentDayDiv.divGroups[i].insertBefore(
                         this.addElement('span', this.groups[currentDayDiv.divGroups[i].g].order_group_name, 'group-day-plan-label')
                         , currentDayDiv.divGroups[i].firstChild);
+                }
             }
             
             whiteSpace += currentDayDiv.divGroups[i].n;
