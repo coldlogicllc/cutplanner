@@ -155,6 +155,7 @@ div.clear {
     height: 16px;
     float: left;
     font-size: 11px;
+    padding: 0px;
 }
 
 .group-day-plan {
