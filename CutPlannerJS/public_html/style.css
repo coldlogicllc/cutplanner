@@ -126,7 +126,6 @@ div.clear {
     padding: 0;
     /*border-right: 2px dashed #ddd;*/
     min-width: 200px;
-    /*max-width: 100%;*/
 }
 
 .day-title {
@@ -143,11 +142,11 @@ div.clear {
 
 .day-title-label {
     float: left;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .day-title-info {
-    
+    min-width: 180px;
 }
 
 .day-title-input {

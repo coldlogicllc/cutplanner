@@ -1,21 +1,28 @@
 function CutPlannerApp(){    
     
+    // Isolate default values here
+    this.defaultHours = 7.5;
+    this.defaultWorkers = 20;
+    this.defaultWorkUnits = 8;
+    this.maxDayHeight = 500;
+    this.reservedGroupColor = '#00ff00';
+    
     // The current user that is logged in.
     this.currentUser = '';
     
-    // UI properties
-    this.maxDayHeight = 500;
-    //this.maxDailyWorkUnits = 1270;    
-    this.reservedGroupColor = '#00ff00';
+    // Containers for storing data
     this.rows = [];
     this.groups = [];
     this.buckets = [];
     this.plans = [];
+    this.days = [];
     this.selected = 0;
     
     // UI controls
     this.buttonAddNew = this.addInput( 'button', 'btn btn-success' );
     this.buttonRemove = this.addInput( 'button', 'btn btn-danger' );  
+    this.buttonHelp = this.addInput( 'button', 'btn float-right');
+    this.buttonRandom = this.addInput( 'button', 'btn float-right');
     this.buttonPlanUpdate = this.addInput( 'button', 'btn btn-warning float-right' ); 
     this.buttonReset = this.addInput( 'button', 'btn float-right' );
     this.buttonSaveListView = this.addInput( 'button', 'btn float-right' ); 
@@ -145,8 +152,21 @@ CutPlannerApp.prototype.formatDate = function( dateString ){
   return daysOfWeek[date.getDay()] + ', ' + month + '/' + day; 
 };
 
-CutPlannerApp.prototype.onTargetDateChange = function( self, element ){
+CutPlannerApp.prototype.onChange = function( self, element ){
     self.userHasUnsavedChanges = false;
+    
+    for(let i = 0; i < self.days.length; i++)
+    {
+        if(self.days[i].infoChanged())
+        {
+            self.userHasUnsavedChanges = true;
+        }
+
+        if ( self.userHasUnsavedChanges) {
+            break;
+        }
+    }
+    
     for(let i = 0; i < self.rows.length; i++){
 
         if(self.rows[i].targetDateChanged())
@@ -167,7 +187,7 @@ CutPlannerApp.prototype.onTargetDateChange = function( self, element ){
     self.buttonReset.disabled = !self.userHasUnsavedChanges;
     self.buttonReset.className = self.userHasUnsavedChanges ? 'btn btn-secondary float-right' : 'btn float-right';
 
-    element.style.color = element.value !== element.originalvalue ? '#0000FF' : '#000000';
+    element.style.color = element.value != element.originalvalue ? '#0000FF' : '#000000';
     
     //console.log(self.userHasUnsavedChanges);
     
@@ -219,7 +239,7 @@ CutPlannerApp.prototype.doneLoading = function( context ) {
     context.loadingDiv.style.display = 'none';
 };
 
-CutPlannerApp.prototype.refreshAll = function( context, plannbr, action, values ) {    
+CutPlannerApp.prototype.refreshAll = function( context, plannbr, action, values, values2 ) {    
     context.loadJson( function( data ){
         
         // Store user
@@ -240,10 +260,11 @@ CutPlannerApp.prototype.refreshAll = function( context, plannbr, action, values 
         }
         
         context.doneLoading(context);
-    }, plannbr, action, values);
+        context.userHasUnsavedChanges = false;
+    }, plannbr, action, values, values2);
 };
 
-CutPlannerApp.prototype.refreshBucketAndGroupList = function( context, plannbr, action, values ) {
+CutPlannerApp.prototype.refreshBucketAndGroupList = function( context, plannbr, action, values, values2 ) {
     context.loadJson( function( data ) {  
         
         // Store user
@@ -260,7 +281,8 @@ CutPlannerApp.prototype.refreshBucketAndGroupList = function( context, plannbr, 
         }
         
         context.doneLoading(context);
-    }, plannbr, action, values);
+        context.userHasUnsavedChanges = false;
+    }, plannbr, action, values, values2 );
 };
 
 CutPlannerApp.prototype.getRowByGroupnbr = function( self, groupnbr ) {
@@ -489,8 +511,6 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
         
         dropDownPlanSelectorOptions.appendChild(option);
     }
-    
-    //console.log(this.plans);
             
     // Add new plan button    
     this.buttonAddNew.value = 'New';
@@ -505,7 +525,8 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
             dropDownPlanSelectorButton.innerHTML = dropDownMenuText;
 
             // Toggle the buttons
-            self.buttonToggle([self.buttonPlanUpdate, self.buttonAddNew, self.buttonRemove], true);
+            self.buttonToggle([self.buttonPlanUpdate, self.buttonAddNew, self.buttonRemove, self.buttonSaveListView], true);
+            self.buttonSaveListView.className = 'btn float-right';
 
             // Refreshes the grid            
             self.refreshAll(self, 0, 'new-plan', self.inputNewName.value);
@@ -536,6 +557,20 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
                 }
             }                        
         }
+    };
+    
+    // Set as test random data
+    this.buttonRandom.value = 'Test';
+    this.buttonRandom.title = 'Insert random test data.';
+    this.buttonRandom.onclick = function(){
+        self.refreshBucketAndGroupList(self, self.selected, 'test-data');
+    };
+    
+    // Set as help button
+    this.buttonHelp.value = 'Help';
+    this.buttonHelp.title = 'Click for instructions';
+    this.buttonHelp.onclick = function(){
+        window.location.href = 'help.html';
     };
         
     // Set as current plan button   
@@ -577,11 +612,19 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
             }
         }
         
+        let changes2 = [];
+        for(let j = 0; j < self.days.length; j++){
+            
+            if(self.days[j].infoChanged()){
+                changes2.push(self.days[j].getJson());
+            }
+        }
+        
         // Toggle buttons
         self.buttonToggle([self.buttonPlanUpdate, self.buttonAddNew, self.buttonRemove], false);
         
         // Refresh draft list and select current
-        self.refreshBucketAndGroupList(self, self.selected, 'save-plan', changes);        
+        self.refreshBucketAndGroupList(self, self.selected, 'save-plan', changes, changes2);        
         
         // Disable reset and compute buttons
         this.disabled = true;
@@ -594,10 +637,12 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
     menuContainer.appendChild(dropDownPlanSelector);
     menuContainer.appendChild(this.buttonAddNew);
     menuContainer.appendChild(this.buttonRemove);
-    menuContainer.appendChild(msgPlanWorkingOn);
+    menuContainer.appendChild(msgPlanWorkingOn);    
     menuContainer.appendChild(this.buttonSaveListView);
     menuContainer.appendChild(this.buttonReset);
-    menuContainer.appendChild(this.buttonPlanUpdate); 
+    menuContainer.appendChild(this.buttonPlanUpdate);
+    menuContainer.appendChild(this.buttonHelp);
+    menuContainer.appendChild(this.buttonRandom);
 };
 
 CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
@@ -638,39 +683,51 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         
         if(this.plandays[data.days[dayCounter].day] !== undefined) {
             inputWorkers.value = this.plandays[data.days[dayCounter].day].workers;
+            inputWorkers.originalvalue = this.plandays[data.days[dayCounter].day].workers;
             inputHours.value = this.plandays[data.days[dayCounter].day].hours;
+            inputHours.originalvalue = this.plandays[data.days[dayCounter].day].hours;
+            
+            /* Set computed width here */
+            let formula = this.plandays[data.days[dayCounter].day].workers * this.plandays[data.days[dayCounter].day].hours * this.defaultWorkUnits;
+            currentDayDiv.style.minWidth = formula / 6 + 'px'; // Should equal 200 pixels for default data.
+        }else {
+            inputWorkers.value = this.defaultWorkers; /* default */
+            inputWorkers.originalvalue = '';
+            inputWorkers.style.color = '#0000FF';
+            inputHours.value = this.defaultHours; /* default */
+            inputHours.style.color = '#0000FF';
+            inputHours.originalvalue = '';
+            
+            /* Set computed width here */
+            currentDayDiv.style.minWidth = ((this.defaultWorkers * this.defaultHours * this.defaultWorkUnits) / 6) + 'px';
         }
         
+        this.days.push({
+            "inputWorkers" : inputWorkers,
+            "inputHours" : inputHours,
+            "infoChanged" : function(){
+                return this.inputWorkers.value != this.inputWorkers.originalvalue 
+                        || this.inputHours.value != this.inputHours.originalvalue;
+            },
+            "getJson" : function(){
+                return { day: data.days[dayCounter].day, hours : this.inputHours.value, workers : this.inputWorkers.value };
+            }
+        });
+        
         inputWorkers.onkeyup = function(){
-            self.saveDayInformation(self, 
-                { day : data.days[dayCounter].day,
-                  workers : inputWorkers.value,
-                  hours: inputHours.value 
-                });
+            self.onChange(self, this);
         };
         
         inputWorkers.onchange = function(){ 
-            self.saveDayInformation(self, 
-                { day : data.days[dayCounter].day,
-                  workers : inputWorkers.value,
-                  hours: inputHours.value 
-                });
+            self.onChange(self, this);
         };
         
         inputHours.onkeyup = function(){
-            self.saveDayInformation(self, 
-                { day : data.days[dayCounter].day,
-                  workers : inputWorkers.value,
-                  hours: inputHours.value 
-                });
+            self.onChange(self, this);
         };
         
         inputHours.onchange = function(){
-            self.saveDayInformation(self, 
-                { day : data.days[dayCounter].day,
-                  workers : inputWorkers.value,
-                  hours: inputHours.value 
-                });
+            self.onChange(self, this);
         };
         
         dayHeaderInfoDiv.appendChild(workerLabel);
@@ -917,7 +974,7 @@ CutPlannerApp.prototype.buildGroupList = function( rootElement, data ) {
         inputTargetDate.originalvalue = group.plan_group_target_date;
         inputTargetDate.row = tableRow;
         inputTargetDate.onchange = function(){
-            self.onTargetDateChange(self, this);            
+            self.onChange(self, this);            
         };
         if(group.plan_group_target_date < group.plan_group_expected_date){
             inputTargetDate.style.backgroundColor =  '#ff6666';
@@ -1044,12 +1101,10 @@ CutPlannerApp.prototype.loadJson = function( callback, plannbr, action, rows, da
         "action": action, 
         "value": plannbr, 
         "values": rows !== undefined ? rows : [],
-        "day": dayinfo !== undefined ? dayinfo.day : '',
-        "hours": dayinfo !== undefined ? dayinfo.hours : '',
-        "workers": dayinfo !== undefined ? dayinfo.workers : ''
+        "days": dayinfo !== undefined ? dayinfo : []
     };
     
-    //console.log(post);
+    console.log(post);
     
     this.startLoading( this );
     
