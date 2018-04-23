@@ -123,7 +123,7 @@ CutPlannerApp.prototype.todayDateFormat = function( ){
     let date = new Date();
     
     return date.getFullYear() + '-' + (date.getMonth() < 10 ? '0' + date.getMonth() : date.getMonth()) + '-' + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
-}
+};
 
 CutPlannerApp.prototype.formatDate = function( dateString ){
   let date = this.getDateFromString(dateString);
@@ -293,7 +293,7 @@ CutPlannerApp.prototype.getRowByGroupnbr = function( self, groupnbr ) {
     }
     
     return null;
-}
+};
 
 CutPlannerApp.prototype.saveDayInformation = function ( self, json) {
     
@@ -383,7 +383,7 @@ CutPlannerApp.prototype.getNextPlanName = function( name , increment ) {
 
 CutPlannerApp.prototype.getNextSuffix = function( increment ) {
     return increment === 0 ? '' :  '_' + increment;
-}
+};
 
 CutPlannerApp.prototype.drawNewPlanForm = function( title, message, success ) {
     this.inputNewName = this.addInput('text', 'input-new-name');
@@ -414,7 +414,7 @@ CutPlannerApp.prototype.drawNewPlanForm = function( title, message, success ) {
           $( this ).remove();
       }
     });
-}
+};
 
 CutPlannerApp.prototype.isInBlueMode = function( ) {
     let invalid = false;
@@ -756,7 +756,7 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
         // Loop groups
         this.totalManusByCurrentDay = this.totalManusForDay(data.days[dayCounter].plan);
         this.totalGroupsByCurrentDay = this.totalGroupsForDay(data.days[dayCounter].plan);
-        this.manuWidthForCurrentDay = parseFloat(180 / 60).toFixed(2) // parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
+        this.manuWidthForCurrentDay = parseFloat(180 / 60).toFixed(2); // parseFloat(180 / this.totalManusByCurrentDay).toFixed(2);
         //console.log(this.totalGroupsByCurrentDay);
         let currentGroupDiv = []; // To hold matching groups
         currentDayDiv.divGroups = [];
@@ -939,7 +939,7 @@ CutPlannerApp.prototype.buildGroupList = function( rootElement, data ) {
         inputName.row = tableRow;
         inputName.onkeyup = function(){
             self.repaintGui(self, group.order_groupnbr);
-        }
+        };
         inputName.placeholder = 'Name...';
         inputName.maxlength = 50;
         inputName.style.border = '1px solid #333';
@@ -1050,7 +1050,7 @@ CutPlannerApp.prototype.buildGroupList = function( rootElement, data ) {
         tDiv.appendChild(inputTargetCutDate);
         
         t2Div.appendChild(this.addElement('span', 'Done: ', 'label'));
-        t2Div.appendChild(inputTargetDate)        
+        t2Div.appendChild(inputTargetDate);        
         tableRow.appendChild(this.addCellArray([tDiv, t2Div]));
         
         let eDiv = this.addDiv('clear');
@@ -1059,7 +1059,7 @@ CutPlannerApp.prototype.buildGroupList = function( rootElement, data ) {
         eDiv.appendChild(inputExpectedCutDate);
         
         e2Div.appendChild(this.addElement('span', 'Done: ', 'label'));
-        e2Div.appendChild(inputExpectedDate)    
+        e2Div.appendChild(inputExpectedDate);    
         tableRow.appendChild(this.addCellArray([eDiv, e2Div]));
         
         tableBody.appendChild(tableRow);
