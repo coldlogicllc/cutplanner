@@ -2308,6 +2308,7 @@ RBT.putGetJson = function (name, json, receiver, saveButtonElement) {
         },
         error: function (result) {
             console.log("error ", result);
+            receiver(result);
             if (saveButtonElement) {
                 saveButtonElement.style.background = "red";
                 saveButtonElement.innerHTML = '<i class="fa fa-exclamation-triangle"></i>';

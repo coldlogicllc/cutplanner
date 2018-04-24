@@ -1084,6 +1084,12 @@ CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {
     
     this.loadJson( function( data ){
            
+        if(data.responseText !== undefined && data.responseText === '') {
+            self.drawModal('Error', 'Error connecting to server or empty data set was returned.');
+            self.doneLoading(self);
+            return;
+        }   
+           
         // Store user
         self.setCurrentUser( data );
         
@@ -1102,7 +1108,7 @@ CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {
         self.buildGroupList( self.listDiv, data );
         section.appendChild( self.listDiv );
               
-        self.loadingDiv.style.display = 'none';
+        self.doneLoading(self);
     }, 0, 'json' );
 };
 
