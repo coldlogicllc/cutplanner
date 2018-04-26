@@ -8,7 +8,7 @@ function CutPlannerApp(){
     this.reservedGroupColor = '#00ff00';
     
     // The current user that is logged in.
-    this.currentUser = '';
+    this.currentUser = 'Unknown';
     
     // Containers for storing data
     this.rows = [];
@@ -443,7 +443,7 @@ CutPlannerApp.prototype.setCurrentUser = function( data ) {
         return;
     }
     
-    this.currentUser = data.user.name;
+    this.currentUser = data.user.name === '' ? this.currentUser : data.user.name;
     
     //console.log(data.user.name);
 };
