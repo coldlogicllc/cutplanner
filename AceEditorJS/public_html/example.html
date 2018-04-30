@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Ace Editor</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Minimum JS files -->
+        <script src="core/ace.js"></script>
+        <script src="core/ext-language_tools.js"></script>
+        <script src="modes/mode-mysql.js"></script>
+        <script src="themes/theme-sqlserver.js"></script>
+        <style type="text/css" media="screen">
+            #editor { 
+                position: fixed; 
+                width: 50%;
+                height: 50%;
+            }
+        </style>
+    </head>
+    <body>
+         reeally before
+        <div style="width:50vw;background:pink">
+            before
+        <div id="editor">zzzz</div>
+            after
+        </div>
+        really after
+        <script type="text/javascript">
+            var editor = ace.edit('editor');
+            editor.setTheme('ace/theme/sqlserver');
+            editor.setOption('enableLiveAutocompletion', true);
+            editor.setOption('enableBasicAutocompletion', true);
+            editor.setOption('tabSize', 2);            
+            editor.session.setMode('ace/mode/mysql');
+            
+            // editor.setOption('maxLines', 50);
+            // editor.getValue()
+            // editor.setValue('SELECT * FROM <it>;');
+            // editor.getSelectedText();
+            // editor.insert('Something cool');
+            // editor.selection.getCursor();
+            // editor.gotoLine(linenumber);
+            // editor.session.getLength()
+        </script>               
+</html>
