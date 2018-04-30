@@ -2,7 +2,7 @@ function GridPicker ( ) {
     this.Width = 4;
     this.Height = 4;
     this.Json = {}; /* The data */
-    //this.ConsumedUrls = []; /* For tracking url's already displayed. */
+    this.ConsumedUrls = []; /* For tracking url's already displayed. */
 };
 
 GridPicker.prototype.LoadHtml = function ( containerId ) {
@@ -34,7 +34,7 @@ GridPicker.prototype.Draw = function ( ) {
         // Columns
         for ( let j = 0; j < this.Width; j++ ) {
             let column = Html.CreateDiv( 'col' );
-            column.appendChild( this.CreateControl ( this.GetNextElement ( this ) ) );
+            column.appendChild( this.CreateControl ( this.GetNextRandomElement ( this ) ) );
             row.appendChild ( column );
         }
 
@@ -63,7 +63,7 @@ GridPicker.prototype.CreateControl = function ( obj ) {
         dislike.title = 'Dislike dress.';
         dislike.onclick = function( ) {
             control.object.like--;
-            let object = self.GetNextElement ( self );
+            let object = self.GetNextRandomElement ( self );
             if ( object !== null ) {
                 iframe.src = object.url;
                 control.object = object;
@@ -98,8 +98,7 @@ GridPicker.prototype.CreateControl = function ( obj ) {
     return control;
 };
 
-GridPicker.prototype.GetNextElement = function ( context ) {
-    
+GridPicker.prototype.ErrorCheckNextElement = function ( context ) {
     let error = '';
     
     if ( context.Json === undefined  
@@ -110,13 +109,63 @@ GridPicker.prototype.GetNextElement = function ( context ) {
     
     if ( error ) {
         alert ( error );
-        return null;
+        return true;
+    }
+    
+    return false;
+};
+
+GridPicker.prototype.EuclideanDistanceAlgorithm = function ( e1, e2 ) {
+    return Math.sqrt((e2.m-e1.m)^2 + (e2.n-e1.n)^2 + (e2.o-e1.o)^2);
+}
+
+GridPicker.prototype.GetNextSimiliarElement = function ( context ) {
+    
+    let mostLiked, mostSimilar = null;
+    
+    if ( context.ErrorCheckNextElement ( context ) ) {
+        return;
+    }
+    
+    // Step 1. Find the most liked element.
+    for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
+        // First record or liked more than current
+        if (mostLiked === null || context.ConsumedUrls[i].liked > mostLiked.liked) {
+            mostLiked = context.ConsumedUrls[i];
+        }
+    }
+    
+    // Step 2. Sift through remaining elements and calculate their distance from most liked.
+    for ( let j = 0; j < context.Json.urls.length; j++ ) {
+        
+        if ( mostSimilar === null) {
+            mostSimilar = context.Json.urls[j];
+            continue;
+        }
+        
+        let currentDistance = context.EuclideanDistanceAlgorithm ( context.Json.urls[j], mostLiked );
+        let bestDistance = context.EuclideanDistanceAlgorithm ( mostSimilar, mostLiked );
+        
+        // If distance is closer to most liked
+        if ( currentDistance <  bestDistance) {
+            mostSimilar = context.Json.urls[j];
+        }
+    }
+    
+    // Step 3. Return most similar.
+    return mostSimilar;
+};
+
+GridPicker.prototype.GetNextRandomElement = function ( context ) {
+    
+    if ( context.ErrorCheckNextElement ( context ) ) {
+        return;
     }
     
     let random = Math.floor( Math.random ( ) * context.Json.urls.length );
     let element = context.Json.urls[ random ];
     
-    //context.ConsumedUrls.push ( element );
+    context.ConsumedUrls.push ( element );
     context.Json.urls.splice ( random, 1 );
     
     return element;
