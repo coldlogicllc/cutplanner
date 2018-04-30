@@ -8,7 +8,7 @@ function CutPlannerApp(){
     this.reservedGroupColor = '#00ff00';
     
     // The current user that is logged in.
-    this.currentUser = '';
+    this.currentUser = 'Unknown';
     
     // Containers for storing data
     this.rows = [];
@@ -443,7 +443,7 @@ CutPlannerApp.prototype.setCurrentUser = function( data ) {
         return;
     }
     
-    this.currentUser = data.user.name;
+    this.currentUser = data.user.name === '' ? this.currentUser : data.user.name;
     
     //console.log(data.user.name);
 };
@@ -1084,6 +1084,12 @@ CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {
     
     this.loadJson( function( data ){
            
+        if(data.responseText !== undefined && data.responseText === '') {
+            self.drawModal('Error', 'Error connecting to server or empty data set was returned.');
+            self.doneLoading(self);
+            return;
+        }   
+           
         // Store user
         self.setCurrentUser( data );
         
@@ -1102,7 +1108,7 @@ CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {
         self.buildGroupList( self.listDiv, data );
         section.appendChild( self.listDiv );
               
-        self.loadingDiv.style.display = 'none';
+        self.doneLoading(self);
     }, 0, 'json' );
 };
 
