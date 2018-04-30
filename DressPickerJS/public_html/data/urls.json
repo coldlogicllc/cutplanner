@@ -1,0 +1,32 @@
+{
+    urls: [
+        { url: 'dresses/1.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/2.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/3.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/4.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/5.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/6.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/7.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/8.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/9.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/10.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/11.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/12.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/13.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/14.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/15.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/16.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/17.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/18.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/19.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/20.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/21.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/22.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/23.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/24.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/25.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/26.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/27.jpg', value: ['n','m','o','p'], like: 0 },
+        { url: 'dresses/28.jpg', value: ['n','m','o','p'], like: 0 }
+    ]
+}
