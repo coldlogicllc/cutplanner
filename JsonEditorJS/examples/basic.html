@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Basic JSON Editor Example</title>
+    
+    <!-- Json Editor -->
+    <script src="../dist/jsoneditor.js"></script>
+    
+    <!-- Custom editors -->
+    <script src="../custom/editors/weirdboolean.js"></script>
+    <script src="../custom/editors/weirdgraphic.js"></script>
+    <script src="../custom/editors/weirdobject.js"></script>
+    <script src="../custom/editors/json3d.js"></script>
+    <script src="../custom/editors/obj3d.js"></script>
+    <script src="../custom/editors/cameraobject.js"></script>
+    <script src="../custom/editors/ambientlightobject.js"></script>
+    <script src="../custom/editors/canvasobject.js"></script>
+    
+    <!-- Three JS libraries -->
+    <script src="../custom/three-js/three.js"></script>
+    <script src="../custom/three-js/OrbitControls.js"></script>
+    <script src="../custom/three-js/ObjectLoader.js"></script>
+    <script src="../custom/three-js/OBJLoader.js"></script>
+    <script src="../custom/three-js/MTLLoader.js"></script>
+    
+    <!-- Jos de jong JSON editor -->
+    <script src="../custom/jos-de-jong/jsoneditorext.js"></script>
+    <link href="../custom/jos-de-jong/jsoneditorext.css" type="text/css" rel="stylesheet" />
+    
+    <style>
+        input[type=text] {
+            width: 400px;
+        }
+    </style>
+  </head>
+  <body>
+    <script src="../custom/three-js/Init.js"></script>
+      
+    <h1>Basic JSON Editor Example</h1>
+    
+    <div id='editor_holder'></div>
+    <button id='submit'>Submit (console.log)</button>
+    <script>
+      
+      // Initialize the editor with a JSON schema
+      var editor = new JSONEditor(document.getElementById('editor_holder'),{
+        schema: {
+          type: "object",
+          title: "Car",
+          properties: {
+            make: {
+              type: "string",
+              enum: [
+                "Toyota",
+                "BMW",
+                "Honda",
+                "Ford",
+                "Chevy",
+                "VW"
+              ]
+            },
+            model: {
+              type: "string"
+            },
+            year: {
+              type: "integer",
+              enum: [
+                1995,1996,1997,1998,1999,
+                2000,2001,2002,2003,2004,
+                2005,2006,2007,2008,2009,
+                2010,2011,2012,2013,2014
+              ],
+              default: 2008
+            },
+            weird: {
+                type: "weirdboolean",
+                title: "A weird boolean",
+                format: "radio",
+                enum: ["true", "false", "maybe", "maybe not", "who the f' knows"]
+            },
+            graphic: {
+                type: "weirdgraphic",
+                title: "A weird graphic",
+                default: "http://paatintl.com/images/adobestock_57490606.jpg?crc=3841858159"
+            },
+            weirdobject: {
+                type: "weirdobject",
+                title: "A weird object",
+                properties: {
+                    stuff : {
+                        type: "string",
+                        title: "stuff"
+                    }
+                }
+            },
+            thing: {
+                type: "canvasobject",
+                title: "Canvas",
+                rotate: { x: 0, y: 0, z: -0.005 },
+                properties: {
+                    camera: {
+                        type: "camera",
+                        title: "Camera",
+                        default: { x: 2.74, y: -130.11, z: 46.46 }
+                    },
+                    ambientlight: {
+                        type: "ambientlight",
+                        title: "Ambient light",
+                        default: { intensity: 1.2, color: '0xFFFFFF' }
+                    },
+                    object1: {
+                        type: "obj3d",
+                        title: "A 3D OBJ object",
+                        default: { obj : "../models/dress/B6410-3.obj", mtl : "../models/dress/B6410-3.mtl" },
+                        scale: { x: .05, y: .05, z: .05 },    
+                        position: { x: 0, y: 0, z: 0 }
+                            
+                    }
+                }
+            }
+          }
+        }
+      });
+      
+      // Hook up the submit button to log to the console
+      document.getElementById('submit').addEventListener('click',function() {
+        // Get the value from the editor
+        console.log(editor.getValue());
+      });
+      
+    </script>
+  </body>
+</html>

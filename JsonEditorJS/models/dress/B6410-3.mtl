@@ -1,0 +1,128 @@
+newmtl material_NOT SET
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS Infinity
+
+newmtl material_B6410-3_Pattern_Frontside_BODY
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 0.0
+map_Kd FabricTextureImage_647074 - Sage Grey Vie Matelasse_COL.png
+map_bump FabricTextureBump_647074 - Sage Grey Vie Matelasse_NRM.jpg
+bump FabricTextureBump_647074 - Sage Grey Vie Matelasse_NRM.jpg
+# This is an Assyst specific value 
+bumpStrenght 0.75
+# Its the roughness map from Assyst Vidya 
+disp FabricTextureRoughness_647074 - Sage Grey Vie Matelasse_ROUGH.jpg
+map_Ks FabricTextureSpecular_647074 - Sage Grey Vie Matelasse_SPEC.jpg
+
+newmtl material_B6410-3_Pattern_Backside_BODY
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 0.0
+map_Kd FabricTextureImage_647074 - Sage Grey Vie Matelasse_COL.png
+map_bump FabricTextureBump_647074 - Sage Grey Vie Matelasse_NRM.jpg
+bump FabricTextureBump_647074 - Sage Grey Vie Matelasse_NRM.jpg
+# This is an Assyst specific value 
+bumpStrenght 0.75
+# Its the roughness map from Assyst Vidya 
+disp FabricTextureRoughness_647074 - Sage Grey Vie Matelasse_ROUGH.jpg
+map_Ks FabricTextureSpecular_647074 - Sage Grey Vie Matelasse_SPEC.jpg
+
+newmtl material_B6410-3_Pattern_Frontside_SIDES
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 0.0
+map_Kd FabricTextureImage_Material - Blue Depths Crepe_COL.png
+map_bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+# This is an Assyst specific value 
+bumpStrenght 0.75
+# Its the roughness map from Assyst Vidya 
+disp FabricTextureRoughness_Material - Blue Depths Crepe_ROUGH.jpg
+map_Ks FabricTextureSpecular_Material - Blue Depths Crepe_SPEC.jpg
+
+newmtl material_B6410-3_Pattern_Backside_SIDES
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 0.0
+map_Kd FabricTextureImage_Material - Blue Depths Crepe_COL.png
+map_bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+# This is an Assyst specific value 
+bumpStrenght 0.75
+# Its the roughness map from Assyst Vidya 
+disp FabricTextureRoughness_Material - Blue Depths Crepe_ROUGH.jpg
+map_Ks FabricTextureSpecular_Material - Blue Depths Crepe_SPEC.jpg
+
+newmtl material_B6410-3_Pattern_Frontside_SLEEVES
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 0.0
+map_Kd FabricTextureImage_Material - Blue Depths Crepe_COL.png
+map_bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+# This is an Assyst specific value 
+bumpStrenght 0.75
+# Its the roughness map from Assyst Vidya 
+disp FabricTextureRoughness_Material - Blue Depths Crepe_ROUGH.jpg
+map_Ks FabricTextureSpecular_Material - Blue Depths Crepe_SPEC.jpg
+
+newmtl material_B6410-3_Pattern_Backside_SLEEVES
+Ka 0.0 0.0 0.0
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 0.0
+map_Kd FabricTextureImage_Material - Blue Depths Crepe_COL.png
+map_bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+bump FabricTextureBump_Material - Blue Depths Crepe_NRM.jpg
+# This is an Assyst specific value 
+bumpStrenght 0.75
+# Its the roughness map from Assyst Vidya 
+disp FabricTextureRoughness_Material - Blue Depths Crepe_ROUGH.jpg
+map_Ks FabricTextureSpecular_Material - Blue Depths Crepe_SPEC.jpg
+
+newmtl material_Avatar_default
+Ka 0.0 0.0 0.0
+Kd 0.75288 0.672 0.5866
+Ks 0.0 0.0 0.0
+d 1.0
+Tr 1.0
+Tf 1 1 1
+illum 2
+NS 1.0
+
