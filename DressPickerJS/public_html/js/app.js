@@ -1,6 +1,6 @@
 function GridPicker ( ) {
-    this.Width = 4;
-    this.Height = 4;
+    this.Width = 5;
+    this.Height = 5;
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
 };
@@ -136,18 +136,12 @@ GridPicker.prototype.EuclideanDistanceAlgorithm = function ( e1, e2 ) {
         sum += Math.pow(e1.value[i] - e2.value[i], 2);
     }
     
-    sum = Math.sqrt ( sum );
-    
-    console.log ( sum );
-    
-    return sum;
+    return Math.sqrt ( sum );
 };
 
 GridPicker.prototype.GetNextSimilarElement = function ( context ) {
     
-    let mostLiked = null;
-    let mostSimilar = null;
-    let index = 0;
+    let mostLiked = null, mostSimilar = null, index = 0;
     
     if ( context.ErrorCheckNextElement ( context ) ) {
         return;
@@ -203,6 +197,9 @@ GridPicker.prototype.GetNextRandomElement = function ( context ) {
 };
 
 GridPicker.prototype.LoadJson = function ( ) {
+    
+    return this.LoadTestData();
+    /*
     return {
             urls: [
                 { url: 'dresses/1.jpg', value: [18, 74, 148], like: 0 },
@@ -234,7 +231,30 @@ GridPicker.prototype.LoadJson = function ( ) {
                 { url: 'dresses/27.jpg', value: [223, 197, 136], like: 0 },
                 { url: 'dresses/28.jpg', value: [33, 32, 38], like: 0 }
             ]
-        };
+        };*/
 };
+
+GridPicker.prototype.LoadTestData = function() {
+    
+    let data = {};
+    data.urls = [];
+    
+    for ( let i = 0; i < 1000; i++ ) {
+        let r = Math.floor(Math.random() * 255),
+            g = Math.floor(Math.random() * 255),
+            b = Math.floor(Math.random() * 255);
+    
+        data.urls.push(
+                { 
+                    url: 'dresses/test.html?r=' + r + '&g=' + g + '&b=' + b,
+                    value: [r, g, b],
+                    like: 0
+                });
+    }
+    
+    return data;
+};
+
+
 
 
