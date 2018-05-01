@@ -1,6 +1,6 @@
 function GridPicker ( ) {
     this.Width = 5;
-    this.Height = 5;
+    this.Height = 3;
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
 };
@@ -55,8 +55,12 @@ GridPicker.prototype.FindElement = function ( context, url ) {
     return -1;
 };
 
+GridPicker.prototype.PrintInfo = function ( element, obj ) {
+  element.innerHTML = 'Score: ' + obj.like  ;
+};
+
 GridPicker.prototype.CreateControl = function ( obj ) {
-    let like, dislike, buy, iframe, control;
+    let like, dislike, buy, iframe, info, control;
     let self = this; 
     
     control = Html.CreateDiv ( 'cell' );
@@ -66,23 +70,22 @@ GridPicker.prototype.CreateControl = function ( obj ) {
         like = Html.CreateButton ( '', 'btn btn-primary' );
         like.title = 'Like dress.';
         like.onclick = function(){
-            //control.like++;
-            self.ConsumedUrls[self.FindElement( self, obj.url )].like++;
-            console.log ( 'Would call random algorithm here.' );
+            let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
+            item.like++;
+            self.PrintInfo(info, item);
         };
 
         dislike = Html.CreateButton ( '', 'btn btn-danger' );
         dislike.title = 'Dislike dress.';
         dislike.onclick = function( ) {
-            //control.object.like--;
-            self.ConsumedUrls[self.FindElement( self, obj.url )].like--;
+            let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
+            item.like--;
             let object = self.GetNextSimilarElement ( self );
             if ( object !== null ) {
                 iframe.src = object.url;
                 control.object = object;
             }
-            
-            console.log ( 'Would call random algorithm here.' );
+            self.PrintInfo(info, object);
         };
         
         buy = Html.CreateButton ( ' Buy', 'btn btn-success' );
@@ -94,6 +97,9 @@ GridPicker.prototype.CreateControl = function ( obj ) {
         iframe = document.createElement ( 'iframe' );
         iframe.src = obj.url;
         
+        info = Html.CreateDiv( 'cell-info');
+        this.PrintInfo( info, obj );
+        
         /* Add glyph icons here */
         like.innerHTML = Html.CreateElement ( 'span', 'glyphicon glyphicon-thumbs-up' ).outerHTML + like.innerHTML;
         dislike.innerHTML = Html.CreateElement ( 'span', 'glyphicon glyphicon-thumbs-down' ).outerHTML + dislike.innerHTML;
@@ -103,6 +109,7 @@ GridPicker.prototype.CreateControl = function ( obj ) {
         control.appendChild(dislike);
         control.appendChild(buy);
         control.appendChild(iframe);
+        control.appendChild(info);
     }
     else {
         control.innerHTML = 'Error unable to retrieve element.';
@@ -139,6 +146,123 @@ GridPicker.prototype.EuclideanDistanceAlgorithm = function ( e1, e2 ) {
     return Math.sqrt ( sum );
 };
 
+GridPicker.prototype.RandomRange = function ( max ) {
+    return Math.floor ( Math.random() * max );
+};
+
+GridPicker.prototype.PickRandomPoint = function ( context, centerPoint ) {
+    
+    let random = {};
+    random.value = [];    
+    
+    for (let i = 0; i < centerPoint.value.length; i++ ) {
+        random.value[i] = context.RandomRange( 255 );
+    }
+    
+    return random;
+};
+
+GridPicker.prototype.PointIsInsideCircle = function ( context, point, radius, center ) {
+    let distance = context.EuclideanDistanceAlgorithm ( point, center );
+    
+    //console.log ('Distance is ' + distance + ' from center and radius is ' + radius);
+    
+    return distance < radius;
+};
+
+GridPicker.prototype.CalculateRadius = function ( context, center ) {
+    let avgRadius = 50, 
+        cntRadius = 1;
+    
+    for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
+        if (context.ConsumedUrls[i].like > 0) {
+            avgRadius += context.EuclideanDistanceAlgorithm ( center, context.ConsumedUrls[i] ) * context.ConsumedUrls[i].like;
+            cntRadius += context.ConsumedUrls[i].like;
+        }
+    }
+    
+    //console.log( "Radius is " + avgRadius / cntRadius);
+    
+    return avgRadius / cntRadius;
+};
+
+GridPicker.prototype.GetRandomFromAveragedLiked = function ( context, centerPoint ) {
+    
+    // Calculate radius (average distance from center).
+    let radius = context.CalculateRadius ( context, centerPoint );
+    let random = context.PickRandomPoint( context, centerPoint );
+    let count = 0;
+    
+    do {
+        // Pick a random point.
+        random = context.PickRandomPoint( context, centerPoint );
+        //console.log ('Picking random point...');
+        count++;
+        
+    } while ( context.PointIsInsideCircle ( context, random, radius, centerPoint ) === false || count > 1000); // Random point is inside circle (distance of point and random is less than radius.
+    
+    // return random point in circle.
+    return random;
+};
+
+GridPicker.prototype.GetAverageLiked = function ( context, mostLiked ) {
+    let average = {},
+        counter = 0,
+        voted = false,
+        features = 0;
+
+    average.value = [];
+    features = mostLiked.value.length;
+    
+    for (let j = 0; j < features; j++) {
+        average.value[j] = 0;
+    }
+    
+    for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
+
+        if ( context.ConsumedUrls[i].like > 0 ) {
+            
+            voted = true;
+            
+            for (let j = 0; j < features; j++) {
+                
+                let value = context.ConsumedUrls[i].value[j];
+                let likeness = context.ConsumedUrls[i].like;
+                        
+                average.value[j] += value * likeness;
+            }
+            
+            counter+= context.ConsumedUrls[i].like;
+        }
+    }
+    
+    for (let j = 0; j < features; j++) {
+        average.value[j] = average.value[j] / counter;
+    }
+    
+    if ( !voted ) {
+        return mostLiked;
+    }
+    
+    return average;
+};
+
+GridPicker.prototype.GetMostLiked = function ( context ) {
+    
+    // Select a random
+    let mostLiked = context.ConsumedUrls[context.RandomRange(context.ConsumedUrls.length)];
+    
+    // Search for liked
+    for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
+        
+        if (context.ConsumedUrls[i].like > mostLiked.like) {
+            mostLiked = context.ConsumedUrls[i];
+        }
+    }
+    
+    return mostLiked;
+};
+
 GridPicker.prototype.GetNextSimilarElement = function ( context ) {
     
     let mostLiked = null, mostSimilar = null, index = 0;
@@ -148,12 +272,11 @@ GridPicker.prototype.GetNextSimilarElement = function ( context ) {
     }
     
     // Step 1. Find the most liked element.
-    for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
-        // First record or liked more than current
-        if (mostLiked === null || context.ConsumedUrls[i].like > mostLiked.like) {
-            mostLiked = context.ConsumedUrls[i];
-        }
-    }
+    mostLiked = context.GetMostLiked( context );
+    // Step 1.1 Find the center most liked element.
+    mostLiked = context.GetAverageLiked ( context, mostLiked );
+    // Step 1.2 Find a random point inside of circle around center most point.
+    mostLiked = context.GetRandomFromAveragedLiked ( context, mostLiked );
     
     // Step 2. Sift through remaining elements and calculate their distance from most liked.
     for ( let j = 0; j < context.Json.urls.length; j++ ) {
@@ -187,7 +310,7 @@ GridPicker.prototype.GetNextRandomElement = function ( context ) {
         return;
     }
     
-    let random = Math.floor( Math.random ( ) * context.Json.urls.length );
+    let random = context.RandomRange( context.Json.urls.length );
     let element = context.Json.urls[ random ];
     
     context.ConsumedUrls.push ( element );
@@ -240,9 +363,9 @@ GridPicker.prototype.LoadTestData = function() {
     data.urls = [];
     
     for ( let i = 0; i < 1000; i++ ) {
-        let r = Math.floor(Math.random() * 255),
-            g = Math.floor(Math.random() * 255),
-            b = Math.floor(Math.random() * 255);
+        let r = this.RandomRange( 255 ),
+            g = this.RandomRange( 255 ),
+            b = this.RandomRange( 255 );
     
         data.urls.push(
                 { 
