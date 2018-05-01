@@ -44,26 +44,39 @@ GridPicker.prototype.Draw = function ( ) {
     return html;
 };
 
+
+GridPicker.prototype.FindElement = function ( context, url ) {
+    for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
+        if ( context.ConsumedUrls[i].url === url) {
+            return i;
+        }
+    }
+    
+    return -1;
+};
+
 GridPicker.prototype.CreateControl = function ( obj ) {
     let like, dislike, buy, iframe, control;
     let self = this; 
     
     control = Html.CreateDiv ( 'cell' );
-    control.object = obj;
+    //control.object = obj;
     
     if ( obj !== null ) {
         like = Html.CreateButton ( '', 'btn btn-primary' );
         like.title = 'Like dress.';
         like.onclick = function(){
-            control.like++;
+            //control.like++;
+            self.ConsumedUrls[self.FindElement( self, obj.url )].like++;
             console.log ( 'Would call random algorithm here.' );
         };
 
         dislike = Html.CreateButton ( '', 'btn btn-danger' );
         dislike.title = 'Dislike dress.';
         dislike.onclick = function( ) {
-            control.object.like--;
-            let object = self.GetNextRandomElement ( self );
+            //control.object.like--;
+            self.ConsumedUrls[self.FindElement( self, obj.url )].like--;
+            let object = self.GetNextSimilarElement ( self );
             if ( object !== null ) {
                 iframe.src = object.url;
                 control.object = object;
@@ -116,12 +129,25 @@ GridPicker.prototype.ErrorCheckNextElement = function ( context ) {
 };
 
 GridPicker.prototype.EuclideanDistanceAlgorithm = function ( e1, e2 ) {
-    return Math.sqrt((e2.m-e1.m)^2 + (e2.n-e1.n)^2 + (e2.o-e1.o)^2);
-}
-
-GridPicker.prototype.GetNextSimiliarElement = function ( context ) {
     
-    let mostLiked, mostSimilar = null;
+    let sum = 0;
+    
+    for ( let i= 0; i < e1.value.length; i++ ) {
+        sum += Math.pow(e1.value[i] - e2.value[i], 2);
+    }
+    
+    sum = Math.sqrt ( sum );
+    
+    console.log ( sum );
+    
+    return sum;
+};
+
+GridPicker.prototype.GetNextSimilarElement = function ( context ) {
+    
+    let mostLiked = null;
+    let mostSimilar = null;
+    let index = 0;
     
     if ( context.ErrorCheckNextElement ( context ) ) {
         return;
@@ -130,7 +156,7 @@ GridPicker.prototype.GetNextSimiliarElement = function ( context ) {
     // Step 1. Find the most liked element.
     for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
         // First record or liked more than current
-        if (mostLiked === null || context.ConsumedUrls[i].liked > mostLiked.liked) {
+        if (mostLiked === null || context.ConsumedUrls[i].like > mostLiked.like) {
             mostLiked = context.ConsumedUrls[i];
         }
     }
@@ -140,6 +166,7 @@ GridPicker.prototype.GetNextSimiliarElement = function ( context ) {
         
         if ( mostSimilar === null) {
             mostSimilar = context.Json.urls[j];
+            index = j;
             continue;
         }
         
@@ -149,8 +176,12 @@ GridPicker.prototype.GetNextSimiliarElement = function ( context ) {
         // If distance is closer to most liked
         if ( currentDistance <  bestDistance) {
             mostSimilar = context.Json.urls[j];
+            index = j;
         }
     }
+    
+    context.ConsumedUrls.push ( mostSimilar );
+    context.Json.urls.splice ( index, 1 );
     
     // Step 3. Return most similar.
     return mostSimilar;
@@ -174,34 +205,34 @@ GridPicker.prototype.GetNextRandomElement = function ( context ) {
 GridPicker.prototype.LoadJson = function ( ) {
     return {
             urls: [
-                { url: 'dresses/1.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/2.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/3.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/4.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/5.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/6.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/7.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/8.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/9.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/10.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/11.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/12.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/13.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/14.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/15.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/16.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/17.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/18.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/19.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/20.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/21.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/22.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/23.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/24.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/25.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/26.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/27.jpg', value: ['n','m','o','p'], like: 0 },
-                { url: 'dresses/28.jpg', value: ['n','m','o','p'], like: 0 }
+                { url: 'dresses/1.jpg', value: [18, 74, 148], like: 0 },
+                { url: 'dresses/2.jpg', value: [91, 179, 199], like: 0 },
+                { url: 'dresses/3.jpg', value: [139, 219, 208], like: 0 },
+                { url: 'dresses/4.jpg', value: [234, 229, 129], like: 0 },
+                { url: 'dresses/5.jpg', value: [2, 2, 2], like: 0 },
+                { url: 'dresses/6.jpg', value: [105, 106, 111], like: 0 },
+                { url: 'dresses/7.jpg', value: [239, 243, 218], like: 0 },
+                { url: 'dresses/8.jpg', value: [22, 25, 34], like: 0 },
+                { url: 'dresses/9.jpg', value: [25, 26, 28], like: 0 },
+                { url: 'dresses/10.jpg', value: [193, 206, 225], like: 0 },
+                { url: 'dresses/11.jpg', value: [244, 193, 212], like: 0 },
+                { url: 'dresses/12.jpg', value: [135, 108, 175], like: 0 },
+                { url: 'dresses/13.jpg', value: [45, 36, 37], like: 0 },
+                { url: 'dresses/14.jpg', value: [201, 6, 12], like: 0 },
+                { url: 'dresses/15.jpg', value: [237, 49, 1], like: 0 },
+                { url: 'dresses/16.jpg', value: [236, 225, 195], like: 0 },
+                { url: 'dresses/17.jpg', value: [238, 184, 50], like: 0 },
+                { url: 'dresses/18.jpg', value: [25, 20, 16], like: 0 },
+                { url: 'dresses/19.jpg', value: [224, 1, 32], like: 0 },
+                { url: 'dresses/20.jpg', value: [254, 246, 165], like: 0 },
+                { url: 'dresses/21.jpg', value: [248, 230, 226], like: 0 },
+                { url: 'dresses/22.jpg', value: [50, 42, 39], like: 0 },
+                { url: 'dresses/23.jpg', value: [219, 218, 224], like: 0 },
+                { url: 'dresses/24.jpg', value: [71, 59, 45], like: 0 },
+                { url: 'dresses/25.jpg', value: [67, 11, 10], like: 0 },
+                { url: 'dresses/26.jpg', value: [242, 27, 32], like: 0 },
+                { url: 'dresses/27.jpg', value: [223, 197, 136], like: 0 },
+                { url: 'dresses/28.jpg', value: [33, 32, 38], like: 0 }
             ]
         };
 };
