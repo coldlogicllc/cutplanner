@@ -19,6 +19,8 @@ GridPicker.prototype.LoadHtml = function ( containerId ) {
 
 GridPicker.prototype.Draw = function ( ) {
     
+    let self = this;
+    
     /* Check for dependencies */
     if ( Html === undefined ) {
         alert ( 'Html JavaScript library is missing.' );
@@ -26,6 +28,10 @@ GridPicker.prototype.Draw = function ( ) {
     }
     
     let html = Html.CreateDiv( 'container' );
+    let buttonRefresh = document.getElementById('Refresh-All');
+    buttonRefresh.onclick = function ( ) {
+        self.RefreshAll( self );
+    };
 
     // Rows
     for ( let i = 0; i < this.Height; i++ ) {
@@ -34,16 +40,41 @@ GridPicker.prototype.Draw = function ( ) {
         // Columns
         for ( let j = 0; j < this.Width; j++ ) {
             let column = Html.CreateDiv( 'col' );
-            column.appendChild( this.CreateControl ( this.GetNextRandomElement ( this ) ) );
+            let element = this.GetNextRandomElement ( this );
+            element.container = column;
+            column.appendChild( this.CreateControl ( element ) );
             row.appendChild ( column );
         }
 
         html.appendChild ( row );
     }
+    
+    //console.log ( this.ConsumedUrls );
 
     return html;
 };
 
+GridPicker.prototype.RefreshAll = function ( context ) {
+    
+    let total = context.ConsumedUrls.length;
+    for ( let i = 0; i < total; i++ ) {
+        
+        let item = context.ConsumedUrls[i];     
+        if ( item.like === 0 ) {
+            
+            item.like--;
+            
+            let element = context.GetNextSimilarElement( context );
+            if ( element !== null ) {
+                element.container = item.container;
+                element.container.removeChild(element.container.firstChild);
+                element.container.appendChild( context.CreateControl ( element ) );
+            }
+            
+            item.container = null;
+        }
+    }
+};
 
 GridPicker.prototype.FindElement = function ( context, url ) {
     for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
@@ -83,8 +114,10 @@ GridPicker.prototype.CreateControl = function ( obj ) {
             let object = self.GetNextSimilarElement ( self );
             if ( object !== null ) {
                 iframe.src = object.url;
-                control.object = object;
+                object.container = item.container;
+                obj = object;
             }
+            item.container = null;
             self.PrintInfo(info, object);
         };
         
@@ -181,9 +214,9 @@ GridPicker.prototype.CalculateRadius = function ( context, center ) {
         }
     }
     
-    //console.log( "Radius is " + avgRadius / cntRadius);
+    console.log( "Radius is " + avgRadius / cntRadius);
     
-    return avgRadius / cntRadius;
+    return (avgRadius / cntRadius) /* 3*/;
 };
 
 GridPicker.prototype.GetRandomFromAveragedLiked = function ( context, centerPoint ) {
