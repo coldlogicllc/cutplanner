@@ -66,7 +66,7 @@ GridPicker.prototype.RefreshAll = function ( context ) {
             item.like--;
             
             let element = context.GetNextSimilarElement( context );
-            if ( element !== null ) {
+            if ( element !== null && item.container !== null) {
                 element.container = item.container;
                 element.container.removeChild(element.container.firstChild);
                 element.container.appendChild( context.CreateControl ( element ) );
