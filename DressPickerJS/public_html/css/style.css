@@ -22,9 +22,16 @@
 .cell iframe {
     width: 190px;
     border: 1px solid #f1f1f1;
-    height: 240px;
+    height: 270px;
+    overflow: hidden;
 }
 
+.iframe-container {
+    position: absolute;
+    width: 190px;
+    height: 270px;
+    background: transparent;
+}
 
 
 

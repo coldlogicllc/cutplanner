@@ -6,6 +6,9 @@ function GridPicker ( ) {
     this.MinimumRadius = 75; /* The minimum length a radius can be. */
 };
 
+/*
+ * Main entry point into application. Renders HTML.
+ */
 GridPicker.prototype.LoadHtml = function ( containerId ) {
 
     let self = this;
@@ -94,10 +97,11 @@ GridPicker.prototype.PrintInfo = function ( element, obj ) {
 };
 
 GridPicker.prototype.CreateControl = function ( obj ) {
-    let like, dislike, buy, iframe, info, control;
+    let like, dislike, buy, iframe,idiv, info, control;
     let self = this; 
     
     control = Html.CreateDiv ( 'cell' );
+    idiv = Html.CreateDiv ( 'iframe-container' );
     //control.object = obj;
     
     if ( obj !== null ) {
@@ -130,8 +134,63 @@ GridPicker.prototype.CreateControl = function ( obj ) {
             console.log ( 'Would call purchase here.' );
         };
 
-        iframe = document.createElement ( 'iframe' );
+        iframe = document.createElement ( 'iframe' ); 
+        iframe.setAttribute("scrolling", "no");
         iframe.src = obj.url;
+        
+        idiv.onclick = function() {
+            let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
+            item.like++;
+            self.PrintInfo(info, item);
+        };
+        
+        /* Mouse click gestures */
+        /*
+        let start = 0, end = 0;        
+        idiv.onmouseout = function(e){
+            end = e.clientY;
+            //console.log(e.clientY);
+            if(end < start) {
+                let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
+                item.like--;
+                let object = self.GetNextSimilarElement ( self );
+                if ( object !== null ) {
+                    iframe.src = object.url;
+                    object.container = item.container;
+                    obj = object;
+                }
+                item.container = null;
+                self.PrintInfo(info, object);
+                start = 0;
+                end = 0;
+            }
+        };        
+        
+        idiv.onmousedown = function(e){
+            start = e.clientY;
+            //console.log(e.clientY);
+        }*/
+        
+        /* Handle swiping gestures */
+        /*
+        let touchstartX = 0, 
+            touchstartY = 0, 
+            touchendX = 0, 
+            touchendY = 0;
+        
+        idiv.addEventListener('touchstart', function () {
+            touchstartX = event.changedTouches[0].screenX;
+            touchstartY = event.changedTouches[0].screenY;
+        });
+        
+        idiv.addEventListener('touchend', function(){
+            touchendX = event.changedTouches[0].screenX;
+            touchendY = event.changedTouches[0].screenY;
+            
+            if (touchendY > touchstartY) {
+                alert('Swipe up!');
+            }
+        });*/
         
         info = Html.CreateDiv( 'cell-info');
         this.PrintInfo( info, obj );
@@ -144,6 +203,7 @@ GridPicker.prototype.CreateControl = function ( obj ) {
         control.appendChild(like);
         control.appendChild(dislike);
         control.appendChild(buy);
+        control.appendChild(idiv);
         control.appendChild(iframe);
         control.appendChild(info);
     }
