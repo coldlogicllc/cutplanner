@@ -1,6 +1,6 @@
 function GridPicker ( ) {
     this.Width = 5;
-    this.Height = 3;
+    this.Height = 2;
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
     this.MinimumRadius = 50;
@@ -66,7 +66,9 @@ GridPicker.prototype.RefreshAll = function ( context ) {
             item.like--;
             
             let element = context.GetNextSimilarElement( context );
-            if ( element !== null && item.container !== null) {
+            if ( element !== null 
+                    && item.container !== null 
+                    && item.container !== undefined) {
                 element.container = item.container;
                 element.container.removeChild(element.container.firstChild);
                 element.container.appendChild( context.CreateControl ( element ) );
@@ -226,7 +228,7 @@ GridPicker.prototype.GetRandomFromCenterPoint = function ( context, centerPoint 
     let count = 0;
     let maxAttempts = 100;
     
-    console.log ( 'Search radius is ' + radius );
+    /* console.log ( 'Search radius is ' + radius ); */
     
     do {
         // Pick a random point.
@@ -411,6 +413,7 @@ GridPicker.prototype.LoadTestData = function() {
     
     return data;
 };
+
 
 
 
