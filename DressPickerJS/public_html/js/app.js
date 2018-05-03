@@ -3,6 +3,7 @@ function GridPicker ( ) {
     this.Height = 3;
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
+    this.MinimumRadius = 100;
 };
 
 GridPicker.prototype.LoadHtml = function ( containerId ) {
@@ -183,7 +184,7 @@ GridPicker.prototype.RandomRange = function ( max ) {
     return Math.floor ( Math.random() * max );
 };
 
-GridPicker.prototype.PickRandomPoint = function ( context, centerPoint ) {
+GridPicker.prototype.RandomPoint = function ( context, centerPoint ) {
     
     let random = {};
     random.value = [];    
@@ -204,7 +205,7 @@ GridPicker.prototype.PointIsInsideCircle = function ( context, point, radius, ce
 };
 
 GridPicker.prototype.CalculateRadius = function ( context, center ) {
-    let avgRadius = 50, 
+    let avgRadius = context.MinimumRadius, 
         cntRadius = 1;
     
     for ( let i = 0; i < context.ConsumedUrls.length; i++ ) {
@@ -214,25 +215,27 @@ GridPicker.prototype.CalculateRadius = function ( context, center ) {
         }
     }
     
-    console.log( "Radius is " + avgRadius / cntRadius);
+    let radius = avgRadius / cntRadius;
     
-    return (avgRadius / cntRadius) /* 3*/;
+    return radius < context.MinimumRadius ? context.MinimumRadius : radius;
 };
 
-GridPicker.prototype.GetRandomFromAveragedLiked = function ( context, centerPoint ) {
+GridPicker.prototype.GetRandomFromCenterPoint = function ( context, centerPoint ) {
     
     // Calculate radius (average distance from center).
     let radius = context.CalculateRadius ( context, centerPoint );
-    let random = context.PickRandomPoint( context, centerPoint );
+    let random;
     let count = 0;
+    let maxAttempts = 100;
+    
+    console.log ( 'Search radius is ' + radius );
     
     do {
         // Pick a random point.
-        random = context.PickRandomPoint( context, centerPoint );
-        //console.log ('Picking random point...');
+        random = context.RandomPoint( context, centerPoint );
         count++;
         
-    } while ( context.PointIsInsideCircle ( context, random, radius, centerPoint ) === false || count > 1000); // Random point is inside circle (distance of point and random is less than radius.
+    } while ( context.PointIsInsideCircle ( context, random, radius, centerPoint ) === false && count < maxAttempts); // Random point is inside circle (distance of point and random is less than radius.
     
     // return random point in circle.
     return random;
@@ -309,7 +312,7 @@ GridPicker.prototype.GetNextSimilarElement = function ( context ) {
     // Step 1.1 Find the center most liked element.
     mostLiked = context.GetAverageLiked ( context, mostLiked );
     // Step 1.2 Find a random point inside of circle around center most point.
-    mostLiked = context.GetRandomFromAveragedLiked ( context, mostLiked );
+    mostLiked = context.GetRandomFromCenterPoint ( context, mostLiked );
     
     // Step 2. Sift through remaining elements and calculate their distance from most liked.
     for ( let j = 0; j < context.Json.urls.length; j++ ) {
