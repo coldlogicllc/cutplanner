@@ -3,7 +3,7 @@ function GridPicker ( ) {
     this.Height = 3;
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
-    this.MinimumRadius = 100;
+    this.MinimumRadius = 50;
 };
 
 GridPicker.prototype.LoadHtml = function ( containerId ) {
@@ -198,8 +198,6 @@ GridPicker.prototype.RandomPoint = function ( context, centerPoint ) {
 
 GridPicker.prototype.PointIsInsideCircle = function ( context, point, radius, center ) {
     let distance = context.EuclideanDistanceAlgorithm ( point, center );
-    
-    //console.log ('Distance is ' + distance + ' from center and radius is ' + radius);
     
     return distance < radius;
 };
