@@ -475,6 +475,12 @@ CutPlannerApp.prototype.buildPlanSelector = function( rootElement, data, plannbr
     dropDownPlanSelector.appendChild(dropDownPlanSelectorOptions);
         
     this.plans = [];
+    
+    if (data.plans === undefined) {
+        this.drawModal('Error', 'Data from server is not available.');
+        return;
+    }
+    
     // Plans drop down menu
     for(let i = 0; i < data.plans.length; i++){
         this.plans.push(data.plans[i].plan_name);
@@ -654,6 +660,10 @@ CutPlannerApp.prototype.buildBucketGrid = function( rootElement, data ) {
     this.groups = [];
     this.buckets = [];
     this.plandays = [];
+    
+    if ( data.plan_days === undefined ) {
+        return;
+    }
     
     for(let planDayCounter = 0; planDayCounter < data.plan_days.length; planDayCounter++)
     {
@@ -861,6 +871,10 @@ CutPlannerApp.prototype.buildGroupList = function( rootElement, data ) {
     
     //let day = data[0].when_planned[dayCounter];   
     this.rows = [];
+    
+    if ( data.groups === undefined ) {
+        return;
+    }
     
     for(let groupCounter = 0; groupCounter < data.groups.length; groupCounter++)
     {
