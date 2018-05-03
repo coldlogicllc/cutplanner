@@ -3,7 +3,7 @@ function GridPicker ( ) {
     this.Height = 2;
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
-    this.MinimumRadius = 50;
+    this.MinimumRadius = 75; /* The minimum length a radius can be. */
 };
 
 GridPicker.prototype.LoadHtml = function ( containerId ) {
@@ -154,6 +154,9 @@ GridPicker.prototype.CreateControl = function ( obj ) {
     return control;
 };
 
+/*
+ * Checks to make sure data exists.
+ */
 GridPicker.prototype.ErrorCheckNextElement = function ( context ) {
     let error = '';
     
@@ -171,6 +174,9 @@ GridPicker.prototype.ErrorCheckNextElement = function ( context ) {
     return false;
 };
 
+/*
+ * Calculates the distance between two points.
+ */
 GridPicker.prototype.EuclideanDistanceAlgorithm = function ( e1, e2 ) {
     
     let sum = 0;
@@ -182,10 +188,16 @@ GridPicker.prototype.EuclideanDistanceAlgorithm = function ( e1, e2 ) {
     return Math.sqrt ( sum );
 };
 
+/*
+ * Selects a random number from zero to max.
+ */
 GridPicker.prototype.RandomRange = function ( max ) {
     return Math.floor ( Math.random() * max );
 };
 
+/*
+ * Selects random values from 0 to 255.
+ */
 GridPicker.prototype.RandomPoint = function ( context, centerPoint ) {
     
     let random = {};
@@ -198,12 +210,20 @@ GridPicker.prototype.RandomPoint = function ( context, centerPoint ) {
     return random;
 };
 
+/*
+ * Returns true/false whether a point is located inside of a circle.
+ */
 GridPicker.prototype.PointIsInsideCircle = function ( context, point, radius, center ) {
     let distance = context.EuclideanDistanceAlgorithm ( point, center );
     
     return distance < radius;
 };
 
+/*
+ * Calculates the radius based on average distance of liked elements from the center of gravity.
+ * A minimum is used to reduce the number of random guesses it takes to find a point that falls within
+ * the search radius.
+ */
 GridPicker.prototype.CalculateRadius = function ( context, center ) {
     let avgRadius = context.MinimumRadius, 
         cntRadius = 1;
@@ -220,13 +240,21 @@ GridPicker.prototype.CalculateRadius = function ( context, center ) {
     return radius < context.MinimumRadius ? context.MinimumRadius : radius;
 };
 
+/*
+ * Currently it attempts to pick a random point within a multi-dimensional plane
+ * and returns if it lies within it's search sphere or is less than the center distance (radius).
+ * TODO: An improvement to this would be to pickout a random point without having
+ * to attempt so many times. Not quite sure how to achieve this without making random,
+ * but it currently attempts many times if only a single product is liked. The minimum
+ * radius length attempts to speed up this function.
+ */
 GridPicker.prototype.GetRandomFromCenterPoint = function ( context, centerPoint ) {
     
     // Calculate radius (average distance from center).
     let radius = context.CalculateRadius ( context, centerPoint );
     let random;
     let count = 0;
-    let maxAttempts = 100;
+    let maxAttempts = 1000;
     
     /* console.log ( 'Search radius is ' + radius ); */
     
@@ -237,10 +265,15 @@ GridPicker.prototype.GetRandomFromCenterPoint = function ( context, centerPoint 
         
     } while ( context.PointIsInsideCircle ( context, random, radius, centerPoint ) === false && count < maxAttempts); // Random point is inside circle (distance of point and random is less than radius.
     
+    console.log (count + ' attempts');
+    
     // return random point in circle.
     return random;
 };
 
+/*
+ * Returns the centermost point (average) based on all likes.
+ */
 GridPicker.prototype.GetAverageLiked = function ( context, mostLiked ) {
     let average = {},
         counter = 0,
@@ -283,6 +316,10 @@ GridPicker.prototype.GetAverageLiked = function ( context, mostLiked ) {
     return average;
 };
 
+/*
+ * Returns the most liked element (highest thumbs up score).
+ */
+
 GridPicker.prototype.GetMostLiked = function ( context ) {
     
     // Select a random
@@ -299,6 +336,14 @@ GridPicker.prototype.GetMostLiked = function ( context ) {
     return mostLiked;
 };
 
+/*
+ * Retrieves an element from JSON urls that matches the search criteria.
+ * Search criteria is based on finding the center point of liked elements
+ * drawing a circle around center with a radius equal to the average distance of
+ * liked elements (A minimum radius constant is used and defined in constructor). 
+ * Then a random point within the circle is returned so that it's somewhat random, but
+ * not identicial to the center point.
+ */
 GridPicker.prototype.GetNextSimilarElement = function ( context ) {
     
     let mostLiked = null, mostSimilar = null, index = 0;
@@ -340,6 +385,10 @@ GridPicker.prototype.GetNextSimilarElement = function ( context ) {
     return mostSimilar;
 };
 
+/*
+ * Removes a random element from the JSON and inserts
+ * it into the consumedUrls list before return the element. 
+ */
 GridPicker.prototype.GetNextRandomElement = function ( context ) {
     
     if ( context.ErrorCheckNextElement ( context ) ) {
@@ -355,9 +404,36 @@ GridPicker.prototype.GetNextRandomElement = function ( context ) {
     return element;
 };
 
+/*
+ * Converts hex color #XXXXXX to rgb array (rrr, ggg, bbb).
+ */
+GridPicker.prototype.HexToRGB = function ( hex ) {
+    let div = Html.CreateDiv ('');
+    div.style.color = hex;
+    let color = window.getComputedStyle(div).color.replace('rgb(', '').replace(')', '');
+    
+    return color.split(',');
+};
+
+/*
+ * Converts a set of numbers for example {0, 1, 2, 3} to work
+ * with 255 (the color length).
+ */
+GridPicker.prototype.NormalizeValue = function ( value, length ) {
+    
+    if ( length === 0 ) {
+        return 0;
+    }
+    
+    let increment = 255 / length;
+    
+    return increment * value;
+};
+
 GridPicker.prototype.LoadJson = function ( ) {
     
-    return this.LoadTestData();
+    return this.LoadRawTestData();
+    //return this.LoadTestData();
     /*
     return {
             urls: [
@@ -412,6 +488,97 @@ GridPicker.prototype.LoadTestData = function() {
     }
     
     return data;
+};
+
+GridPicker.prototype.LoadRawTestData = function( ) {
+  
+    let data = {};
+    data.urls = [];
+    
+    let json = [
+      {
+          "id": "MMVT", 
+          "options": [
+              {
+                  "name": "color", 
+                  "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], 
+                  "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}
+              , {
+                  "name": "pockets",
+                  "color": [null, null, null, null],
+                  "values": ["Pn", "Pa", "Pcl", "PaPcl"]}]}
+                , {
+           "id": "WMET",
+           "options": [
+               {
+                   "name": "color", 
+                   "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"],
+                   "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}
+               , {
+                   "name": "trim", 
+                   "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"],
+                   "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}
+               , {
+                   "name": "pockets", 
+                   "color": [null, null, null, null, null, null, null],
+                   "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]
+               }
+           ]
+       }
+   ];  
+   
+   // Loop ID's
+   for (let i = 0; i < json.length; i++) {
+       for (let a = 0; a < json[i].options[0].color.length; a++) {
+           for (let b = 0; b < json[i].options[1].values.length; b++) {
+                if (json[i].options.length > 2) {
+                    for (let c = 0; c < json[i].options[2].values.length; c++) {
+                        /*console.log ( 'http://performancescrubs.com/images.jsp?id=' + json[i].id 
+                                + '&color=' + json[i].options[0].values[a] 
+                                + '&trim=' + json[i].options[1].values[b]
+                                + '&pockets=Pn' + json[i].options[2].values[c]);*/
+                        let color = this.HexToRGB (json[i].options[0].color[a]);
+                        data.urls.push({
+                            url: 'http://performancescrubs.com/images.jsp?id=' + json[i].id 
+                                + '&color=' + json[i].options[0].values[a] 
+                                + '&trim=' + json[i].options[1].values[b]
+                                + '&pockets=Pn' + json[i].options[2].values[c],
+                            like: 0,
+                            value: [color[0]
+                                , color[1]
+                                , color[2]
+                                , this.NormalizeValue(b, json[i].options[1].values.length)
+                                , this.NormalizeValue(c, json[i].options[2].values.length)]
+                        });
+                    }
+                }
+                else {
+                    /*console.log ( 'http://performancescrubs.com/images.jsp?id=' + json[i].id 
+                                + '&color=' + json[i].options[0].values[a] 
+                                + '&pockets=' + json[i].options[1].values[b]);*/
+                    let color = this.HexToRGB (json[i].options[0].color[a]);
+                    data.urls.push({
+                        url: 'http://performancescrubs.com/images.jsp?id=' + json[i].id 
+                            + '&color=' + json[i].options[0].values[a]
+                            + '&pockets=Pn' + json[i].options[1].values[b],
+                        like: 0,
+                        value: [color[0]
+                            , color[1]
+                            , color[2]
+                            , 127.5
+                            , this.NormalizeValue(b, json[i].options[1].values.length)]
+                    });
+                }
+            }
+       }
+   }
+   
+    
+   
+   //console.log ( data.urls );
+   //console.log ( this.HexToRGB ( '#ff0000' ));
+   
+   return data;
 };
 
 
