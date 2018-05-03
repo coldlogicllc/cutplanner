@@ -265,7 +265,7 @@ GridPicker.prototype.GetRandomFromCenterPoint = function ( context, centerPoint 
         
     } while ( context.PointIsInsideCircle ( context, random, radius, centerPoint ) === false && count < maxAttempts); // Random point is inside circle (distance of point and random is less than radius.
     
-    console.log (count + ' attempts');
+    //console.log (count + ' attempts');
     
     // return random point in circle.
     return random;
