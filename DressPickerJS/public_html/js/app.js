@@ -138,6 +138,7 @@ GridPicker.prototype.SlideUp = function ( element ) {
     element.className += 'slide-up';
     setTimeout(function(){
         element.className = '';
+        element.style.visibility = 'hidden';
     }, 450);
 }
 
@@ -186,6 +187,10 @@ GridPicker.prototype.CreateControl = function ( obj ) {
 
         iframe = document.createElement('iframe');
         iframe.setAttribute("scrolling", "no");
+        iframe.style.visibility = 'hidden';
+        iframe.onload = function(){
+          iframe.style.visibility = 'visible';  
+        };
         iframe.src = obj.url;
 
         idiv.onclick = function () {
@@ -209,6 +214,9 @@ GridPicker.prototype.CreateControl = function ( obj ) {
                 self.SlideUp ( iframe );
                 let object = self.GetNextSimilarElement ( self );
                 if ( object !== null ) {
+                    iframe.onload = function(){
+                        iframe.style.visibility = 'visible';
+                    };
                     iframe.src = object.url;
                     object.container = item.container;
                     obj = object;
@@ -375,7 +383,7 @@ GridPicker.prototype.GetRandomFromCenterPoint = function (context, centerPoint) 
     let count = 0;
     let maxAttempts = 1000;
     
-    console.log ( 'Search radius is ' + radius ); 
+    //console.log ( 'Search radius is ' + radius ); 
     
     do {
         // Pick a random point.

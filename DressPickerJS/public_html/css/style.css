@@ -56,9 +56,9 @@
 @keyframes up {
     0%   { top: 0px; }
     25%  { top: -150px; }
-    50%  { top: -250px; }
-    75%  { top: -450px; }
-    100% { top: -650px; }
+    50%  { top: -350px; }
+    75%  { top: -600px; }
+    100% { top: -900px; }
 }
 
 
