@@ -7,6 +7,10 @@
     cursor: pointer;
 }
 
+.btn-success {
+    width: 190px;
+}
+
 .button-list {
     text-align: center;
 }
@@ -31,7 +35,30 @@
     width: 190px;
     height: 270px;
     background: transparent;
+    text-align: left;
 }
 
+/* Icons */
+.like-icon {
+    font-size: 48px;
+    color: rgb(247,91,91);
+   
+}
+
+/* Slider up */
+.slide-up {
+    position: relative;
+    animation-name: up;
+    animation-duration: .45s;
+    animation-iteration-count: 1;
+}
+
+@keyframes up {
+    0%   { top: 0px; }
+    25%  { top: -150px; }
+    50%  { top: -250px; }
+    75%  { top: -450px; }
+    100% { top: -650px; }
+}
 
 

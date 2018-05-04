@@ -4,8 +4,9 @@ function GridPicker( ) {
     this.Json = {}; /* The data */
     this.ConsumedUrls = []; /* For tracking url's already displayed. */
     this.MinimumRadius = 75; /* The minimum length a radius can be. */
-}
-;
+    this.DefaultMinimum = 75;
+    this.DefaultMaximum = 255;
+};
 
 /*
  * Main entry point into application. Renders HTML.
@@ -37,6 +38,11 @@ GridPicker.prototype.Draw = function ( ) {
     buttonRefresh.onclick = function ( ) {
         self.RefreshAll(self);
     };
+    
+    let buttonGoWide = document.getElementById('Go-Wide');
+    buttonGoWide.onclick = function ( ) {
+        self.GoWide ( self );
+    };
 
     // Rows
     for (let i = 0; i < this.Height; i++) {
@@ -62,11 +68,38 @@ GridPicker.prototype.Draw = function ( ) {
 GridPicker.prototype.RefreshAll = function (context) {
 
     let total = context.ConsumedUrls.length;
-    for (let i = 0; i < total; i++) {
+    context.MinimumRadius = context.DefaultMinimum;
+    
+    for ( let i = 0; i < total; i++ ) {
+        
+        let item = context.ConsumedUrls[i];     
+        if ( item.like === 0 ) {
+            
+            item.like--;
+            
+            let element = context.GetNextSimilarElement( context );
+            if ( element !== null 
+                    && item.container !== null 
+                    && item.container !== undefined) {
+                element.container = item.container;
+                element.container.removeChild(element.container.firstChild);
+                element.container.appendChild( context.CreateControl ( element ) );
+            }
+            
+            item.container = null;
+        }
+    }
+};
 
-        let item = context.ConsumedUrls[i];
-        if (item.like === 0) {
-
+GridPicker.prototype.GoWide = function ( context ) {
+    let total = context.ConsumedUrls.length;
+    context.MinimumRadius = context.DefaultMaximum;
+    
+    for ( let i = 0; i < total; i++ ) {
+        
+        let item = context.ConsumedUrls[i];     
+        if ( item.like === 0 ) {
+            
             item.like--;
 
             let element = context.GetNextSimilarElement(context);
@@ -97,16 +130,29 @@ GridPicker.prototype.PrintInfo = function (element, obj) {
     element.innerHTML = 'Score: ' + obj.like;
 };
 
-GridPicker.prototype.CreateControl = function (obj) {
+GridPicker.prototype.DisplayHeart = function ( element ) {
+    element.innerHTML = Html.CreateElement ( 'span', 'glyphicon glyphicon-heart like-icon' ).outerHTML;
+}
+
+GridPicker.prototype.SlideUp = function ( element ) {
+    element.className += 'slide-up';
+    setTimeout(function(){
+        element.className = '';
+    }, 450);
+}
+
+GridPicker.prototype.CreateControl = function ( obj ) {
     let like, dislike, buy, iframe, idiv, info, control;
-    let self = this;
-
-    control = Html.CreateDiv('cell');
-    idiv = Html.CreateDiv('iframe-container');
+    let self = this; 
+    
+    control = Html.CreateDiv ( 'cell' );
+    idiv = Html.CreateDiv ( 'iframe-container' );
     //control.object = obj;
-
-    if (obj !== null) {
-        like = Html.CreateButton('', 'btn btn-primary');
+    
+    if ( obj !== null ) {
+        
+        /*
+        like = Html.CreateButton ( '', 'btn btn-primary' );
         like.title = 'Like dress.';
         like.onclick = function () {
             let item = self.ConsumedUrls[self.FindElement(self, obj.url)];
@@ -116,20 +162,23 @@ GridPicker.prototype.CreateControl = function (obj) {
 
         dislike = Html.CreateButton('', 'btn btn-danger');
         dislike.title = 'Dislike dress.';
-        dislike.onclick = function ( ) {
-            let item = self.ConsumedUrls[self.FindElement(self, obj.url)];
+        dislike.onclick = function( ) {
+            
+            let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
             item.like--;
-            let object = self.GetNextSimilarElement(self);
-            if (object !== null) {
+            self.MinimumRadius = self.DefaultMinimum;
+            let object = self.GetNextSimilarElement ( self );
+            if ( object !== null ) {
                 iframe.src = object.url;
                 object.container = item.container;
                 obj = object;
             }
             item.container = null;
+            idiv.innerHTML = '';
             self.PrintInfo(info, object);
-        };
-
-        buy = Html.CreateButton(' Buy', 'btn btn-success');
+        };*/
+        
+        buy = Html.CreateButton ( ' Buy', 'btn btn-success' );
         buy.title = 'Buy dress.';
         buy.onclick = function ( ) {
             console.log('Would call purchase here.');
@@ -143,35 +192,45 @@ GridPicker.prototype.CreateControl = function (obj) {
             let item = self.ConsumedUrls[self.FindElement(self, obj.url)];
             item.like++;
             self.PrintInfo(info, item);
+            self.DisplayHeart ( this );
         };
 
         /* Mouse click gestures */
-        /*
-         let start = 0, end = 0;        
-         idiv.onmouseout = function(e){
-         end = e.clientY;
-         //console.log(e.clientY);
-         if(end < start) {
-         let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
-         item.like--;
-         let object = self.GetNextSimilarElement ( self );
-         if ( object !== null ) {
-         iframe.src = object.url;
-         object.container = item.container;
-         obj = object;
-         }
-         item.container = null;
-         self.PrintInfo(info, object);
-         start = 0;
-         end = 0;
-         }
-         };        
-         
-         idiv.onmousedown = function(e){
-         start = e.clientY;
-         //console.log(e.clientY);
-         }*/
-
+        
+        let start = 0, end = 0; 
+        
+        idiv.onmouseout = function(e){
+            end = e.clientY;
+            //console.log(e.clientY);
+            if(end < start) {
+                let item = self.ConsumedUrls[self.FindElement( self, obj.url )];
+                item.like--;
+                self.MinimumRadius = self.DefaultMinimum;
+                self.SlideUp ( iframe );
+                let object = self.GetNextSimilarElement ( self );
+                if ( object !== null ) {
+                    iframe.src = object.url;
+                    object.container = item.container;
+                    obj = object;
+                }
+                item.container = null;
+                idiv.innerHTML = '';
+                self.PrintInfo(info, object);
+                start = 0;
+                end = 0;
+            }
+        };  
+        
+        idiv.onmouseup = function(e) {
+            start = 0;
+            end = 0;
+        }
+        
+        idiv.onmousedown = function(e){
+            start = e.clientY;
+            //console.log(e.clientY);
+        }
+        
         /* Handle swiping gestures */
         /*
          let touchstartX = 0, 
@@ -197,12 +256,12 @@ GridPicker.prototype.CreateControl = function (obj) {
         this.PrintInfo(info, obj);
 
         /* Add glyph icons here */
-        like.innerHTML = Html.CreateElement('span', 'glyphicon glyphicon-thumbs-up').outerHTML + like.innerHTML;
-        dislike.innerHTML = Html.CreateElement('span', 'glyphicon glyphicon-thumbs-down').outerHTML + dislike.innerHTML;
-        buy.innerHTML = Html.CreateElement('span', 'glyphicon glyphicon-shopping-cart').outerHTML + buy.innerHTML;
+        //like.innerHTML = Html.CreateElement ( 'span', 'glyphicon glyphicon-thumbs-up' ).outerHTML + like.innerHTML;
+        //dislike.innerHTML = Html.CreateElement ( 'span', 'glyphicon glyphicon-thumbs-down' ).outerHTML + dislike.innerHTML;
+        buy.innerHTML = Html.CreateElement ( 'span', 'glyphicon glyphicon-shopping-cart' ).outerHTML + buy.innerHTML;
 
-        control.appendChild(like);
-        control.appendChild(dislike);
+        //control.appendChild(like);
+        //control.appendChild(dislike);
         control.appendChild(buy);
         control.appendChild(idiv);
         control.appendChild(iframe);
@@ -315,9 +374,9 @@ GridPicker.prototype.GetRandomFromCenterPoint = function (context, centerPoint) 
     let random;
     let count = 0;
     let maxAttempts = 1000;
-
-    /* console.log ( 'Search radius is ' + radius ); */
-
+    
+    console.log ( 'Search radius is ' + radius ); 
+    
     do {
         // Pick a random point.
         random = context.RandomPoint(context, centerPoint);
@@ -554,49 +613,13 @@ GridPicker.prototype.LoadRawTestData = function ( ) {
 
     let data = {};
     data.urls = [];
-
-    let json = [
-        {
-            "id": "MMVT",
-            "options": [
-                {
-                    "name": "color",
-                    "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"],
-                    "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}
-                , {
-                    "name": "pockets",
-                    "color": [null, null, null, null],
-                    "values": ["Pn", "Pa", "Pcl", "PaPcl"]}]}
-        , {
-            "id": "WMET",
-            "options": [
-                {
-                    "name": "color",
-                    "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"],
-                    "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}
-                , {
-                    "name": "trim",
-                    "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"],
-                    "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}
-                , {
-                    "name": "pockets",
-                    "color": [null, null, null, null, null, null, null],
-                    "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]
-                }
-            ]
-        }
-    ];
-
-    let not_json =
-            [{"id": "WMBV", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMCT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMDT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMET", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMFJ", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}]}, {"id": "WMMT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMNJ", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}]}, {"id": "WMNV", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}]}, {"id": "WMSP", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}]}, {"id": "WMSS", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}]}, {"id": "WMSV", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "pockets", "color": [null, null], "values": ["Pn", "Pcl"]}]}, {"id": "WMUP", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}]}, {"id": "WMVT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}];
-
-    json =
-            [{"id": "WMBV", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMCT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMDT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMET", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMMT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMVT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ff4a00", "#ffef00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "To", "Ty", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}];
-
-    // Loop ID's
-    for (let i = 0; i < json.length; i++) {
-        for (let a = 0; a < json[i].options[0].color.length; a++) {
-            for (let b = 0; b < json[i].options[1].values.length; b++) {
+    
+    let json = [{"id": "WMBV", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMCT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMDT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMET", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMMT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}, {"id": "WMVT", "options": [{"name": "color", "color": ["#292929", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#c42020", "#cc0c4c", "#d96300", "#edcea1", "#ff6600", "#ffd154", "#095334", "#1aa13e", "#272c4f", "#501a6b", "#002594", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Bk", "Gs", "Lg", "Wh", "Bc", "Cms", "Rd", "Rb", "Ob", "Kh", "Tor", "Gd", "Hg", "Sg", "Nb", "P", "Bl", "Tq", "Cb", "Sb"]}, {"name": "trim", "color": ["#000000", "#545454", "#999999", "#ffffff", "#4e2e28", "#960e29", "#cc0c4c", "#d20000", "#d96300", "#edcea1", "#fdd5e7", "#ffef00", "#ff4a00", "#ffd154", "#ff4db8", "#095334", "#1aa13e", "#00ff00", "#29004a", "#644d77", "#002594", "#7a8aa4", "#2fc7c7", "#81a2d1", "#afc5f7"], "values": ["Tb", "Tgs", "Tlg", "Tw", "Tbc", "Tcms", "Trasp", "Tr", "Tob", "Tkh", "Tlp", "Ty", "To", "Tgd", "Thp", "Thg", "Tsg", "Tng", "Tnb", "Tp", "Trb", "Tlb", "Ttq", "Tcb", "Tsb"]}, {"name": "pockets", "color": [null, null, null, null, null, null, null], "values": ["Pn", "Pr", "Pl", "Pi", "PrPl", "PrPi", "PrPlPi"]}]}];  
+   
+   // Loop ID's
+   for (let i = 0; i < json.length; i++) {
+       for (let a = 0; a < json[i].options[0].color.length; a++) {
+           for (let b = 0; b < json[i].options[1].values.length; b++) {
                 if (json[i].options.length > 2) {
                     for (let c = 0; c < json[i].options[2].values.length; c++) {
                         /*console.log ( 'http://performancescrubs.com/images.jsp?id=' + json[i].id 
@@ -610,11 +633,12 @@ GridPicker.prototype.LoadRawTestData = function ( ) {
                                     + '&trim=' + json[i].options[1].values[b]
                                     + '&pockets=Pn' + json[i].options[2].values[c],
                             like: 0,
-                            value: [color[0]
-                                        , color[1]
-                                        , color[2]
-                                        , this.NormalizeValue(b, json[i].options[1].values.length)
-                                        , this.NormalizeValue(c, json[i].options[2].values.length)]
+                            value: [this.NormalizeValue(i, json.length)
+                                , color[0]
+                                , color[1]
+                                , color[2]
+                                , this.NormalizeValue(b, json[i].options[1].values.length)
+                                , this.NormalizeValue(c, json[i].options[2].values.length)]
                         });
                     }
                 } else {
@@ -627,11 +651,12 @@ GridPicker.prototype.LoadRawTestData = function ( ) {
                                 + '&color=' + json[i].options[0].values[a]
                                 + '&pockets=Pn' + json[i].options[1].values[b],
                         like: 0,
-                        value: [color[0]
-                                    , color[1]
-                                    , color[2]
-                                    , 127.5
-                                    , this.NormalizeValue(b, json[i].options[1].values.length)]
+                        value: [this.NormalizeValue(i, json.length)
+                            , color[0]
+                            , color[1]
+                            , color[2]
+                            , 127.5
+                            , this.NormalizeValue(b, json[i].options[1].values.length)]
                     });
                 }
             }
@@ -645,8 +670,3 @@ GridPicker.prototype.LoadRawTestData = function ( ) {
 
     return data;
 };
-
-
-
-
-
