@@ -1,17 +1,170 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Documentation for using Cut Planner</title>
+        <title>Help for using Cut Planner</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
+        <style>
+            dt {font-weight: bold}
+        </style>
+    </head>  
     <body>
+        <div><h2>Goal:
+        To operate the factory as efficiently as possible while satisfying all schedule commitments
+        </h2></div>
+        <p>
+            Orders that arrive at OPM can be divided into two:
+        <ol>
+            <li>"On Demand" orders - which we want to deliver as soon as possible.
+            <li>"Planned Orders" - typically schools - which we know about some time before they are due to be delivered - often we know about them before they are ordered.
+        </ol>
+        "On demand" orders cannot be scheduled in advance; we have to guess when and how many there will be. Once they are ordered we have essentially no spare time.
+        "Planned Orders" can be planned; we can spread their manufacture over the available time. 
+        The most important piece of information we need to do that is the 
+        <u>date when they are scheduled to be delivered</u>.  
+        Since "Planned Orders" orders are usually a large number of orders that will be delivered at one time,
+        and therefore have to be manufactured by the same date, we group those orders into "Order Groups" 
+        which have a name and a color (just for display, not necessary the color of the product for that school), and a <u>promised date</u>.
+        <p>
+            Ideally we always operate with a set of promised dates that we know we can achieve. We should not commit dates unless we think we can achieve those dates.
+            That is to say we have an <u>achievable plan</u>. If things go wrong - such as having more On Demand orders than we allowed or are unable to manufacture product as quickly as 
+            we planned - then the plan will become <u>unachievable</u>. At this point, this application ("Cut Planner") should be used to make decisions on how to make the plan achievable again.
+            The levers you have are:
+        <ol>
+            <li>
+                Increase the hours or number of people working in the factory so that we get through work fast enough to meet commitments.
+
+            </li>
+            <li>
+                Relax the target dates on one or more Order Groups -- tell the system it can make longer for those orders, so that it can do other orders earlier.
+            </li>
+            <li>
+                Once you have made space by adding hours or workers or relaxing some Order Groups, you can tighten the target on Order Groups 
+                that want want completed earlier.
+            </li>
+
+        </ol>
+
+
+        <dl>
+            <dt>Cut Dates</dt>
+            <dd>At moment the system only schedules the beginning of the manufacturing process: the cut. It <i>assumes</i> the it takes a fixed 
+                time (currently 3 business days) between cutting and the completion of the orders.
+            </dd>
+            <dt>Completed Date</dt>
+            <dd>Because most people (especially customers) think in terms of when the order will be complete,
+                not when we will start cutting, dates in Cut Planner that <u>you</u> work with are <i>completed dates</i> 
+                even though the system is just adjusting to calculate the cut date from the completed date, or vice versa.
+                One day we will have more science behind the difference between cut and completed days, but we can at least allow for weekends, without you having to.
+            </dd>
+            <dt>Order group</dt>
+            <dd>
+                This is set of orders that have been grouped together automatically or manually and given name and a promised date. 
+                Order Groups are automatically create for Internet orders that contain patches (and are named for their patch), 
+                and  if there is no existing group with that name they are given a Promised Date of "infinity" Which means "after everything else is done". 
+                This requires that you change the promised date to whatever is true. As long as there are incomplete orders for that group, 
+                new Internet orders for the same patch will go into the same group and have the promised date you set. (not infinity).
+                <p>
+                    All staff-entered orders are assigned a Promised date of infinity. You have to set a different date, if you want one.
+                </p>
+            </dd>
+            <dt>On Demand Order Groups</dt>
+            <dd>
+                This are special Order Groups that Internet and Amazon orders are automatically placed in, each day, 
+                and given a promised date that demands they be cut that day. Normally they will be cut that day and the Order Group will disappear.
+                If they are not cut, they will stay until they are cut and be the highest priority for cutting that day. If several days' On Demand Order Groups exist
+                they will be prioritized oldest first. This will often happen after a day the factory is closed, since orders can be placed on those days.
+                <p>
+                    Since On Demand Order Groups are not created until the day the orders are placed, all future days contain a place holder for the workload that 
+                    we guess we will need for those orders.
+
+                </p>
+            </dd>
+            <dt>Promised Date</dt>
+            <dd>
+                This is the <u>completion</u> date that we promised the customer. There is only one promised date per Order group. 
+                You can change it, and you are assumed to be managing the customer relationship if you do. 
+            </dd>
+            <dt>Target Date</dt>
+            <dd>
+                The date on which the System is trying to complete the order. Initially the target date is the promised date, 
+                but you can change the target in order to create an achievable plan. Once the plan is created the target date is no longer connected to the Promisied date,
+                except that it will show promised dates in Red if they are after the target date.
+            </dd>
+            <dt>Plan</dt>
+            <dd>
+                A set of target dates for each Order group and workers/hours for each day. Given these data the system computes the best sequence
+                in which to cut the orders to achieve the target dates and operate the factory as efficiently as possible. 
+                For each Order group it calculates the date that it expects the last part of the last order in the Order Group to be completed.
+            </dd>
+            <dt>Expected Date</dt>
+            <dd>
+                The calculated date, for each Order Group, for a given plan, when the last part of the last order in the Order Group to be completed.  
+            </dd>
+            <dt>Achievable Plan</dt>
+            <dd>
+                A plan for which, for each Order group, the Expected Dates is on or before the Target Date.
+            </dd>
+            <dt>Draft Plan</dt>
+            <dd>
+                You can only change draft plans. You make a draft plan , using the NEW button to copy the plan you are looking at. You make changes to this draft plan,
+                then ask the system to compute the plan using those changes until you are satisfied with it and it is achievable. 
+                Target Dates that are after the Expected Date are shown in Red showing that the plan is not Achievable.Then you can make it the Current Plan.
+                You cannot make a plan current unless it is Achievable. 
+            </dd>
+            <dt>Current Plan</dt>
+            <dd>
+                At any time the system is running on one plan, meaning that it is cutting Manu's in the order determined by that plan.
+                <p>
+                    The current plan is automatically updated - for example by removing work that has been done, 
+                    adding new orders, and allowing for the passage of time (reducing the work capacity for today as time passes and re-basing the plan for tomorrow when it comes.
+                    (Draft plans also get updated in ths way if you keep them long enough and go back and look at them).
+                <p>
+                    Although current plan was Achievable when it was set, it may become unachievable because of  those updates. 
+                    If that happens, your attention is required. You have to use CutPlanner to change the plan to be Acheivable. 
+                    <b>If nothing is done, then the scheduling will degrade into "Everything is an Emergency" which is the same as Nothing is an Emergency, and 
+                        all scheduling commitments are likely to be ignored which is the <u>normal mode of operation since the factory was started</u></b>
+                </p>
+            </dd>
+        </dl>
+        <h2>   What You see:</h2>
+        <dl>
+            <dt>
+                top
+            </dt>
+            <dd><ul style="border:thin solid black">
+                    <li>The days starting today and going out to the right until we run out of "planned Orders"
+                        <ul style="border:thin solid black">
+                            <li>Inside each day there is box for each Order Group for which we plan to do work on that day. 
+                                The border of the box is the display color of the order group.
+                                The order of the box down the screen is not significant.
+                                <ul style="border:thin solid black">
+                                    <li>Inside each box there are vertical lines (or blocks of color). Each line represents a Manu that will be cut. 
+                                        The color of the line is the color of the fabric of that manu. 
+                                        The order of the lines, from left to right, is the order that the manus will be cut (grouped into WIPs obviously).
+                                        Typically, but not always, there will be large blocks of the same color because it is more efficient to cut in big blocks.
+                                        Manus from different Order Groups may be cut together. The line representing the Manu is in the box of its 'Order group' 
+                                        but in the sequence that it will be cut. 
+
+                                </ul>
+                        </ul>  
+                </ul>
+            </dd>
+            <dt>
+                bottom
+            </dt>
+            <dd>
+                The Order Groups in order of Promised Date. You can change the name and the color (which is just for display in the Top) and teh promosed date.
+                Changing those data changes it for all plans.
+            </dd>
+        </dl>
         <div><h1>Instructions</h1></div>
         <ol>
             <li>Select a plan you wish to view in the top left corner drop-down menu. By default the "current plan" will be selected and will have a check next to its name.</li>
             <li>To add/remove plans click the Add/Remove buttons next to the plans drop down menu. For adding new plans you will be prompted to enter a name. The default plan name is current user_date.</li>
             <li>Once a plan is selected, you can change plan information. New plans will be a clone of the current plan. It is recommended that users create a new plan instead of making changes to the current.</li>
-            <li>The grid displays groups of "buckets" which are a collection of manus scheduled to be cut. From here you have the option of changing the number of hours or workers for that day. Changes will not be committed until "Compute New Schedule" button is pressed.</li>
+            <li>The grid displays groups of "boxes" which are a collection of manus scheduled to be cut. 
+                From here you have the option of changing the number of hours or workers for that day. Changes will not be committed until "Compute New Schedule" button is pressed.</li>
             <li>Below the day grid you can view a list of groups (a collection of boxes from the grid). These are color coded to match.</li>
             <li>If you change the target date or workers/hours you will need to "Compute New Schedule" by clicking the blue button up top. It will be disabled until one of these fields is changed. Unsaved changes will appear in blue.</li>
             <li>Once you are satisfied with your changes to target date, hours or workers, click "Compute New Schedule".</li>
