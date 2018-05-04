@@ -65,6 +65,10 @@ GridPicker.prototype.Draw = function ( ) {
     return html;
 };
 
+GridPicker.prototype.sleep = function (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+};
+
 GridPicker.prototype.RefreshAll = function (context) {
 
     let total = context.ConsumedUrls.length;
@@ -83,7 +87,13 @@ GridPicker.prototype.RefreshAll = function (context) {
                     && item.container !== undefined) {
                 element.container = item.container;
                 element.container.removeChild(element.container.firstChild);
-                element.container.appendChild( context.CreateControl ( element ) );
+                element.container.appendChild( context.CreateControl ( element ) );                                    
+                /*
+                element.container.firstChild.children[1].className = 'slide-up';
+                context.sleep(450).then(() => {
+                    element.container.removeChild(element.container.firstChild);
+                    element.container.appendChild( context.CreateControl ( element ) );                    
+                });*/
             }
             
             item.container = null;
@@ -127,7 +137,7 @@ GridPicker.prototype.FindElement = function (context, url) {
 };
 
 GridPicker.prototype.PrintInfo = function (element, obj) {
-    element.innerHTML = 'Score: ' + obj.like;
+    //element.innerHTML = 'Score: ' + obj.like;
 };
 
 GridPicker.prototype.DisplayHeart = function ( element ) {
@@ -232,12 +242,12 @@ GridPicker.prototype.CreateControl = function ( obj ) {
         idiv.onmouseup = function(e) {
             start = 0;
             end = 0;
-        }
+        };
         
         idiv.onmousedown = function(e){
             start = e.clientY;
             //console.log(e.clientY);
-        }
+        };
         
         /* Handle swiping gestures */
         /*
