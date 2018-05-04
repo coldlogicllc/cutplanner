@@ -545,11 +545,16 @@ GridPicker.prototype.GetNextRandomElement = function (context) {
  * Converts hex color #XXXXXX to rgb array (rrr, ggg, bbb).
  */
 GridPicker.prototype.HexToRGB = function (hex) {
-    let div = Html.CreateDiv('');
-    div.style.color = hex;
-    let color = window.getComputedStyle(div).color.replace('rgb(', '').replace(')', '');
 
-    return color.split(',');
+    let color = [];
+    hex = hex.replace('#','');
+    color[0] = parseInt(hex.substring(0,2), 16);
+    color[1] = parseInt(hex.substring(2,4), 16);
+    color[2] = parseInt(hex.substring(4,6), 16);
+    
+    //console.log(color);
+
+    return color;
 };
 
 /*
