@@ -1094,7 +1094,6 @@ CutPlannerApp.prototype.loadHtml = function( widget_element_id ) {
     
     if(RBT !== undefined && RBT.jsonServerURL !== undefined) {
         RBT.jsonServerURL = 'http://ds3.coldlogic.com:24089/';
-         RBT.jsonServerURL = '/';
     }
     
     this.loadJson( function( data ){
